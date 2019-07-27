@@ -4,25 +4,29 @@ import (
 	"github.com/mohitranka/golox/err"
 	"github.com/mohitranka/golox/token"
 	"strconv"
+	"unicode"
 )
 
+var start int
+var current int
+var line int
+var tokens []*token.Token
+var keywords map[string]token.TokenType
+
 type Scanner struct {
-	source   string
-	tokens   []*token.Token
-	start    int
-	current  int
-	line     int
-	keywords map[string]token.TokenType
+	source string
 }
 
 func NewScanner(source string) *Scanner {
 	s := new(Scanner)
 	s.source = source
-	s.tokens = make([]*token.Token, 0)
-	s.start = 0
-	s.current = 0
-	s.line = 1
-	s.keywords = map[string]token.TokenType{
+
+	tokens = make([]*token.Token, 0)
+	start = 0
+	current = 0
+	line = 1
+
+	keywords = map[string]token.TokenType{
 		"and":    token.AND,
 		"class":  token.CLASS,
 		"else":   token.ELSE,
@@ -44,17 +48,20 @@ func NewScanner(source string) *Scanner {
 }
 
 func (s Scanner) ScanTokens() []*token.Token {
-	for !s.isAtEnd() {
-		s.start = s.current
+	for {
+		if s.isAtEnd() {
+			break
+		}
+		start = current
 		s.scanToken()
 	}
 
-	s.tokens = append(s.tokens, token.NewToken(token.EOF, "", struct{}{}, s.line))
-	return s.tokens
+	tokens = append(tokens, token.NewToken(token.EOF, "", nil, line))
+	return tokens
 }
 
 func (s Scanner) isAtEnd() bool {
-	return s.current >= len(s.source)
+	return current >= len(s.source)
 }
 
 func (s Scanner) scanToken() {
@@ -105,7 +112,10 @@ func (s Scanner) scanToken() {
 		}
 	case '/':
 		if s.match('/') {
-			for !s.isAtEnd() && s.peek() != '\n' {
+			for {
+				if s.isAtEnd() || s.peek() == '\n' {
+					break
+				}
 				s.advance()
 			}
 		} else {
@@ -114,7 +124,7 @@ func (s Scanner) scanToken() {
 	case ' ', '\r', '\t':
 		break
 	case '\n':
-		s.line++
+		line += 1
 	case '"':
 		s.stringTokenizer()
 	default:
@@ -123,13 +133,14 @@ func (s Scanner) scanToken() {
 		} else if s.isAlpha(c) {
 			s.identifierTokenizer()
 		} else {
-			err.Error(s.line, "Unexpected character.")
+			err.Error(line, "Unexpected character.")
 		}
 	}
 }
 
 func (s Scanner) isAlpha(c byte) bool {
-	return (c >= 'a' && c <= 'z') || (c >= 'A' || c <= 'Z') || c == '_'
+	return unicode.IsLetter(rune(c)) || c == '_'
+	//	return !((c < 'a' || c > 'z') && (c < 'A' && c > 'Z') && c != '_')
 }
 
 func (s Scanner) isAlphaNumeric(c byte) bool {
@@ -137,10 +148,13 @@ func (s Scanner) isAlphaNumeric(c byte) bool {
 }
 
 func (s Scanner) identifierTokenizer() {
-	for s.isAlphaNumeric(s.peek()) {
+	for {
+		if !s.isAlphaNumeric(s.peek()) {
+			break
+		}
 		s.advance()
 	}
-	token_type, ok := s.keywords[s.source[s.start:s.current+1]]
+	token_type, ok := keywords[s.source[start:current]]
 	if !ok {
 		token_type = token.IDENTIFIER
 	}
@@ -152,20 +166,26 @@ func (s Scanner) isDigit(c byte) bool {
 }
 
 func (s Scanner) numberTokenizer() error {
-	for s.isDigit(s.peek()) {
+	for {
+		if !s.isDigit(s.peek()) {
+			break
+		}
 		s.advance()
 	}
 
 	if s.peek() == '.' && s.isDigit(s.peekNext()) {
 		s.advance()
-		for s.isDigit(s.peek()) {
+		for {
+			if !s.isDigit(s.peek()) {
+				break
+			}
 			s.advance()
 		}
 	}
 
-	value, e := strconv.ParseFloat(s.source[s.start:s.current+1], 64)
+	value, e := strconv.ParseFloat(s.source[start:current], 64)
 	if e != nil {
-		err.Error(s.line, "Invalid number")
+		err.Error(line, "Invalid number")
 		return e
 	}
 	s.addTokenWithLiteral(token.NUMBER, value)
@@ -173,28 +193,31 @@ func (s Scanner) numberTokenizer() error {
 }
 
 func (s Scanner) peekNext() byte {
-	if s.current+1 >= len(s.source) {
+	if current+1 >= len(s.source) {
 		return 0
 	}
 
-	return s.source[s.current+1]
+	return s.source[current+1]
 }
 
 func (s Scanner) stringTokenizer() {
-	for !s.isAtEnd() && s.peek() != '"' {
+	for {
+		if s.isAtEnd() || s.peek() == '"' {
+			break
+		}
 		if s.peek() == '\n' {
-			s.line++
+			line += 1
 		}
 		s.advance()
 	}
 
 	if s.isAtEnd() {
-		err.Error(s.line, "Unterminated String")
+		err.Error(line, "Unterminated String")
+		return
 	}
 
 	s.advance()
-
-	text := s.source[s.start+1 : s.current]
+	text := s.source[start+1 : current]
 	s.addTokenWithLiteral(token.STRING, text)
 }
 
@@ -202,7 +225,7 @@ func (s Scanner) peek() byte {
 	if s.isAtEnd() {
 		return 0
 	}
-	return s.source[s.current]
+	return s.source[current]
 }
 
 func (s Scanner) match(expected byte) bool {
@@ -210,16 +233,16 @@ func (s Scanner) match(expected byte) bool {
 		return false
 	}
 
-	if s.source[s.current] != expected {
+	if s.source[current] != expected {
 		return false
 	}
-	s.current++
+	current += 1
 	return true
 }
 
 func (s Scanner) advance() byte {
-	s.current++
-	return s.source[s.current-1]
+	current += 1
+	return s.source[current-1]
 }
 
 func (s Scanner) addToken(token_type token.TokenType) {
@@ -227,6 +250,6 @@ func (s Scanner) addToken(token_type token.TokenType) {
 }
 
 func (s Scanner) addTokenWithLiteral(token_type token.TokenType, literal interface{}) {
-	text := s.source[s.start : s.current+1]
-	s.tokens = append(s.tokens, token.NewToken(token_type, text, literal, s.line))
+	text := s.source[start:current]
+	tokens = append(tokens, token.NewToken(token_type, text, literal, line))
 }

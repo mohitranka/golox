@@ -6,7 +6,7 @@ const (
 
 	// 1 character token
 
-	LEFT_PAREN TokenType = iota
+	LEFT_PAREN TokenType = iota + 1
 	RIGHT_PAREN
 	LEFT_BRACE
 	RIGHT_BRACE

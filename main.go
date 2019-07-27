@@ -60,9 +60,9 @@ func (l Lox) runPrompt() {
 }
 
 func (l Lox) run(source string) {
-	scanner := scanner.NewScanner(source)
-	tokens := scanner.ScanTokens()
-	for _, token := range tokens {
-		fmt.Println(token)
+	s := scanner.NewScanner(source)
+	tokens := s.ScanTokens()
+	for i, token := range tokens {
+		fmt.Printf("Index: %d, Token: %v\n", i, token)
 	}
 }
