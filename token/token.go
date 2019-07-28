@@ -5,21 +5,21 @@ import (
 )
 
 type Token struct {
-	token_type TokenType
-	lexeme     string
-	literal    interface{}
-	line       int
+	Ttype   TokenType
+	Lexeme  string
+	Literal interface{}
+	Line    int
 }
 
 func NewToken(token_type TokenType, lexeme string, literal interface{}, line int) *Token {
 	t := new(Token)
-	t.token_type = token_type
-	t.lexeme = lexeme
-	t.literal = literal
-	t.line = line
+	t.Ttype = token_type
+	t.Lexeme = lexeme
+	t.Literal = literal
+	t.Line = line
 	return t
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("TokenType:%s Lexeme:%s Literal:%v", t.token_type, t.lexeme, t.literal)
+	return fmt.Sprintf("TokenType:%s Lexeme:%s Literal:%v", t.Ttype, t.Lexeme, t.Literal)
 }
