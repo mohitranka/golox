@@ -215,7 +215,7 @@ func (s Scanner) stringTokenizer() error {
 	}
 
 	s.advance()
-	text := s.source[start+1 : current]
+	text := s.source[start+1 : current-1]
 	s.addTokenWithLiteral(token.STRING, text)
 	return nil
 }

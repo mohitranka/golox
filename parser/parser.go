@@ -58,7 +58,7 @@ func (p Parser) previous() token.Token {
 func (p Parser) Parse() expression.Expr {
 	expr, e := p.expression()
 	if e != nil {
-        panic(&err.RuntimeError{ Line: p.peek().Line, Msg: e.Error() })
+		panic(&err.RuntimeError{Line: p.peek().Line, Msg: e.Error()})
 	}
 	return expr
 }
