@@ -10,12 +10,16 @@ import (
 type Interpreter struct {
 }
 
-func (i Interpreter) VisitLiteralExpr(expr expression.ExprLiteral) interface{} {
+func (i Interpreter) VisitLiteralExpr(expr *expression.ExprLiteral) interface{} {
 	return expr.Value
 }
 
-func (i Interpreter) VisitGroupingExpr(expr expression.ExprGrouping) interface{} {
+func (i Interpreter) VisitGroupingExpr(expr *expression.ExprGrouping) interface{} {
 	return i.evaluate(expr.Expr)
+}
+
+func (i Interpreter) VisitVarExpr(expr *expression.ExprVar) interface{} {
+	return nil //TODO: To be implemented. Placeholder implementation so that Interpreter is an interface of ExprVisitor
 }
 
 func (i Interpreter) Interpret(expr expression.Expr) {
@@ -25,11 +29,15 @@ func (i Interpreter) Interpret(expr expression.Expr) {
 }
 
 func (i Interpreter) evaluate(expr expression.Expr) interface{} {
-	return expression.PrintExpr(expr) //FIXME: This returns string, requires work
+	return expr.Accept(i)
 }
 
-func (i Interpreter) VisitUnaryExpr(expr expression.ExprUnary) interface{} {
-	right := i.evaluate(&expr)
+func (i Interpreter) VisitAssignExpr(expr *expression.ExprAssign) interface{} {
+	return nil //TODO: To be implemented. Placeholder implementation so that Interpreter is an interface of ExprVisitor
+}
+
+func (i Interpreter) VisitUnaryExpr(expr *expression.ExprUnary) interface{} {
+	right := i.evaluate(expr)
 	switch expr.Operator.Type {
 	case token.BANG:
 		return !i.isTruthy(right.(float64))
@@ -47,7 +55,7 @@ func (i Interpreter) isTruthy(obj float64) bool {
 	return true
 }
 
-func (i Interpreter) VisitBinaryExpr(expr expression.ExprBinary) interface{} {
+func (i Interpreter) VisitBinaryExpr(expr *expression.ExprBinary) interface{} {
 	left := i.evaluate(expr.Left)
 	right := i.evaluate(expr.Right)
 
