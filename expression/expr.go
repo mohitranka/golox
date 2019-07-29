@@ -6,6 +6,7 @@ import (
 
 type Expr interface {
 	Expression() Expr
+	Accept(v ExprVisitor) interface{}
 }
 
 type ExprAssign struct {
@@ -36,14 +37,20 @@ type ExprVar struct {
 	Name token.Token
 }
 
-func (e *ExprAssign) Expression() Expr { return e }
+func (e *ExprAssign) Expression() Expr                 { return e }
+func (e *ExprAssign) Accept(v ExprVisitor) interface{} { return v.VisitAssignExpr(e) }
 
-func (e *ExprBinary) Expression() Expr { return e }
+func (e *ExprBinary) Expression() Expr                 { return e }
+func (e *ExprBinary) Accept(v ExprVisitor) interface{} { return v.VisitBinaryExpr(e) }
 
-func (e *ExprGrouping) Expression() Expr { return e }
+func (e *ExprGrouping) Expression() Expr                 { return e }
+func (e *ExprGrouping) Accept(v ExprVisitor) interface{} { return v.VisitGroupingExpr(e) }
 
-func (e *ExprLiteral) Expression() Expr { return e }
+func (e *ExprLiteral) Expression() Expr                 { return e }
+func (e *ExprLiteral) Accept(v ExprVisitor) interface{} { return v.VisitLiteralExpr(e) }
 
-func (e *ExprUnary) Expression() Expr { return e }
+func (e *ExprUnary) Expression() Expr                 { return e }
+func (e *ExprUnary) Accept(v ExprVisitor) interface{} { return v.VisitUnaryExpr(e) }
 
-func (e *ExprVar) Expression() Expr { return e }
+func (e *ExprVar) Expression() Expr                 { return e }
+func (e *ExprVar) Accept(v ExprVisitor) interface{} { return v.VisitVarExpr(e) }
