@@ -8,18 +8,20 @@ import (
 	"strings"
 
 	//Local packages
-	"github.com/mohitranka/golox/expression"
+	"github.com/mohitranka/golox/interpreter"
 	"github.com/mohitranka/golox/parser"
 	"github.com/mohitranka/golox/scanner"
 )
 
 type Lox struct {
-	HadError bool
+	HadError        bool
+	HadRuntimeError bool
 }
 
 func NewLox() *Lox {
 	l := new(Lox)
 	l.HadError = false
+	l.HadRuntimeError = false
 	return l
 }
 
@@ -49,6 +51,10 @@ func (l Lox) runFile(path string) {
 	if l.HadError {
 		os.Exit(65)
 	}
+
+	if l.HadRuntimeError {
+		os.Exit(70)
+	}
 }
 
 func (l Lox) runPrompt() {
@@ -71,5 +77,6 @@ func (l Lox) run(source string) {
 	if l.HadError {
 		return
 	}
-	fmt.Println(expression.PrintExpr(e))
+	i := &interpreter.Interpreter{}
+	i.Interpret(e)
 }
