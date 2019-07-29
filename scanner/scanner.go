@@ -133,7 +133,7 @@ func (s Scanner) scanToken() {
 		} else if s.isAlpha(c) {
 			s.identifierTokenizer()
 		} else {
-			err.Error(line, "Unexpected character.")
+			panic(&err.RuntimeError{line, "Unexpected character."})
 		}
 	}
 }
@@ -185,8 +185,7 @@ func (s Scanner) numberTokenizer() error {
 
 	value, e := strconv.ParseFloat(s.source[start:current], 64)
 	if e != nil {
-		err.Error(line, "Invalid number")
-		return e
+		return &err.RuntimeError{line, e.Error()}
 	}
 	s.addTokenWithLiteral(token.NUMBER, value)
 	return nil
@@ -200,7 +199,7 @@ func (s Scanner) peekNext() byte {
 	return s.source[current+1]
 }
 
-func (s Scanner) stringTokenizer() {
+func (s Scanner) stringTokenizer() error {
 	for {
 		if s.isAtEnd() || s.peek() == '"' {
 			break
@@ -212,13 +211,13 @@ func (s Scanner) stringTokenizer() {
 	}
 
 	if s.isAtEnd() {
-		err.Error(line, "Unterminated String")
-		return
+		return &err.RuntimeError{line, "Unterminated String"}
 	}
 
 	s.advance()
 	text := s.source[start+1 : current]
 	s.addTokenWithLiteral(token.STRING, text)
+	return nil
 }
 
 func (s Scanner) peek() byte {
