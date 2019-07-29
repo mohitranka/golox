@@ -54,27 +54,31 @@ func (p Parser) previous() token.Token {
 	return p.tokens[p.current-1]
 }
 
-func (p Parser) expression() expression.Expr {
-	expr, e := p.equality()
+func (p Parser) parse() expression.Expr {
+	expr, e := p.expression()
 	if e != nil {
-		panic(&err.RuntimeError{Line: p.peek().Line, Msg: e.Error()})
+		return nil
 	}
 	return expr
 }
 
+func (p Parser) expression() (expression.Expr, error) {
+	return p.equality()
+}
+
 func (p Parser) equality() (expression.Expr, error) {
-	expr, err := p.comparison()
-	if err != nil {
-		return nil, err
+	expr, e := p.comparison()
+	if e != nil {
+		return nil, e
 	}
 	for {
 		if !p.match(token.BANG_EQUAL, token.EQUAL_EQUAL) {
 			break
 		}
 		operator := p.previous()
-		right, err := p.comparison()
-		if err != nil {
-			return nil, err
+		right, e := p.comparison()
+		if e != nil {
+			return nil, e
 		}
 		expr = &expression.ExprBinary{Left: expr, Operator: operator, Right: right}
 	}
@@ -82,18 +86,18 @@ func (p Parser) equality() (expression.Expr, error) {
 }
 
 func (p Parser) comparison() (expression.Expr, error) {
-	expr, err := p.addition()
-	if err != nil {
-		return nil, err
+	expr, e := p.addition()
+	if e != nil {
+		return nil, e
 	}
 	for {
 		if !p.match(token.GREATER, token.GREATER_EQUAL, token.LESS, token.LESS_EQUAL) {
 			break
 		}
 		operator := p.previous()
-		right, err := p.addition()
-		if err != nil {
-			return nil, err
+		right, e := p.addition()
+		if e != nil {
+			return nil, e
 		}
 		expr = &expression.ExprBinary{Left: expr, Operator: operator, Right: right}
 	}
@@ -101,18 +105,18 @@ func (p Parser) comparison() (expression.Expr, error) {
 }
 
 func (p Parser) addition() (expression.Expr, error) {
-	expr, err := p.multiplication()
-	if err != nil {
-		return nil, err
+	expr, e := p.multiplication()
+	if e != nil {
+		return nil, e
 	}
 	for {
 		if !p.match(token.MINUS, token.PLUS) {
 			break
 		}
 		operator := p.previous()
-		right, err := p.multiplication()
-		if err != nil {
-			return nil, err
+		right, e := p.multiplication()
+		if e != nil {
+			return nil, e
 		}
 		expr = &expression.ExprBinary{Left: expr, Operator: operator, Right: right}
 	}
@@ -120,9 +124,9 @@ func (p Parser) addition() (expression.Expr, error) {
 }
 
 func (p Parser) multiplication() (expression.Expr, error) {
-	expr, err := p.unary()
-	if err != nil {
-		return nil, err
+	expr, e := p.unary()
+	if e != nil {
+		return nil, e
 	}
 	for {
 		if !p.match(token.SLASH, token.STAR) {
@@ -130,9 +134,9 @@ func (p Parser) multiplication() (expression.Expr, error) {
 		}
 
 		operator := p.previous()
-		right, err := p.unary()
-		if err != nil {
-			return nil, err
+		right, e := p.unary()
+		if e != nil {
+			return nil, e
 		}
 		expr = &expression.ExprBinary{Left: expr, Operator: operator, Right: right}
 	}
@@ -142,9 +146,9 @@ func (p Parser) multiplication() (expression.Expr, error) {
 func (p Parser) unary() (expression.Expr, error) {
 	if p.match(token.BANG, token.MINUS) {
 		operator := p.previous()
-		right, err := p.unary()
-		if err != nil {
-			return nil, err
+		right, e := p.unary()
+		if e != nil {
+			return nil, e
 		}
 		return &expression.ExprUnary{Operator: operator, Right: right}, nil
 	}
@@ -168,7 +172,10 @@ func (p Parser) primary() (expression.Expr, error) {
 		return &expression.ExprLiteral{p.previous().Literal}, nil
 	}
 	if p.match(token.LEFT_PAREN) {
-		expr := p.expression()
+		expr, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
 		p.consume(token.RIGHT_PAREN, "Expect ')' after expression.")
 		return &expression.ExprGrouping{expr}, nil
 	}
