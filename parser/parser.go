@@ -6,15 +6,16 @@ import (
 	"github.com/mohitranka/golox/token"
 )
 
+var current int
+
 type Parser struct {
-	tokens  []token.Token
-	current int
+	tokens []*token.Token
 }
 
-func NewParser(tokens []token.Token, current int) *Parser {
+func NewParser(tokens []*token.Token) *Parser {
 	np := new(Parser)
 	np.tokens = tokens
-	np.current = current
+	current = 0
 	return np
 }
 
@@ -37,7 +38,7 @@ func (p Parser) check(token_type token.TokenType) bool {
 
 func (p Parser) advance() token.Token {
 	if !p.isAtEnd() {
-		p.current++
+		current++
 	}
 	return p.previous()
 }
@@ -47,17 +48,17 @@ func (p Parser) isAtEnd() bool {
 }
 
 func (p Parser) peek() token.Token {
-	return p.tokens[p.current]
+	return *p.tokens[current]
 }
 
 func (p Parser) previous() token.Token {
-	return p.tokens[p.current-1]
+	return *p.tokens[current-1]
 }
 
-func (p Parser) parse() expression.Expr {
+func (p Parser) Parse() expression.Expr {
 	expr, e := p.expression()
 	if e != nil {
-		return nil
+        panic(&err.RuntimeError{ Line: p.peek().Line, Msg: e.Error() })
 	}
 	return expr
 }

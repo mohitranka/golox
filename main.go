@@ -3,10 +3,14 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/mohitranka/golox/scanner"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	//Local packages
+	"github.com/mohitranka/golox/expression"
+	"github.com/mohitranka/golox/parser"
+	"github.com/mohitranka/golox/scanner"
 )
 
 type Lox struct {
@@ -62,7 +66,10 @@ func (l Lox) runPrompt() {
 func (l Lox) run(source string) {
 	s := scanner.NewScanner(source)
 	tokens := s.ScanTokens()
-	for i, token := range tokens {
-		fmt.Printf("Index: %d, Token: %v\n", i, token)
+	p := parser.NewParser(tokens)
+	e := p.Parse()
+	if l.HadError {
+		return
 	}
+	fmt.Println(expression.PrintExpr(e))
 }
