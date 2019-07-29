@@ -49,7 +49,7 @@ func (p Parser) check(token_type token.TokenType) bool {
 	if p.isAtEnd() {
 		return false
 	}
-	return p.peek().Ttype == token_type
+	return p.peek().Type == token_type
 }
 
 func (p Parser) advance() token.Token {
@@ -60,7 +60,7 @@ func (p Parser) advance() token.Token {
 }
 
 func (p Parser) isAtEnd() bool {
-	return p.peek().Ttype == token.EOF
+	return p.peek().Type == token.EOF
 }
 
 func (p Parser) peek() token.Token {

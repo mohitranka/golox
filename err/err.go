@@ -24,7 +24,7 @@ func (re *RuntimeError) Error() string {
 }
 
 func (pe *ParseError) Error() string {
-	if pe.Token.Ttype == token.EOF {
+	if pe.Token.Type == token.EOF {
 		return report(pe.Token.Line, " at end", pe.Msg)
 	} else {
 		return report(pe.Token.Line, fmt.Sprintf(" at '%s'", pe.Token.Lexeme), pe.Msg)

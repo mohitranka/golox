@@ -5,7 +5,7 @@ import (
 )
 
 type Token struct {
-	Ttype   TokenType
+	Type    TokenType
 	Lexeme  string
 	Literal interface{}
 	Line    int
@@ -13,7 +13,7 @@ type Token struct {
 
 func NewToken(token_type TokenType, lexeme string, literal interface{}, line int) *Token {
 	t := new(Token)
-	t.Ttype = token_type
+	t.Type = token_type
 	t.Lexeme = lexeme
 	t.Literal = literal
 	t.Line = line
@@ -21,5 +21,5 @@ func NewToken(token_type TokenType, lexeme string, literal interface{}, line int
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("TokenType:%s Lexeme:%s Literal:%v", t.Ttype, t.Lexeme, t.Literal)
+	return fmt.Sprintf("TokenType:%s Lexeme:%s Literal:%v", t.Type, t.Lexeme, t.Literal)
 }
