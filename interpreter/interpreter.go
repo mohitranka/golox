@@ -37,7 +37,7 @@ func (i Interpreter) VisitAssignExpr(expr *expression.ExprAssign) interface{} {
 }
 
 func (i Interpreter) VisitUnaryExpr(expr *expression.ExprUnary) interface{} {
-	right := i.evaluate(expr)
+	right := i.evaluate(expr.Right)
 	switch expr.Operator.Type {
 	case token.BANG:
 		return !i.isTruthy(right.(float64))
