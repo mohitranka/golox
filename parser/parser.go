@@ -38,7 +38,7 @@ func (p Parser) check(token_type token.TokenType) bool {
 	return p.peek().Type == token_type
 }
 
-func (p Parser) advance() token.Token {
+func (p Parser) advance() *token.Token {
 	if !p.isAtEnd() {
 		current++
 	}
@@ -53,8 +53,8 @@ func (p Parser) peek() token.Token {
 	return *p.tokens[current]
 }
 
-func (p Parser) previous() token.Token {
-	return *p.tokens[current-1]
+func (p Parser) previous() *token.Token {
+	return p.tokens[current-1]
 }
 
 func (p Parser) Parse() []statement.Stmt {
@@ -82,7 +82,7 @@ func (p Parser) varDeclaration() statement.Stmt {
 		initializer, _ = p.expression()
 	}
 	p.consume(token.SEMICOLON, "Expect ';' after variable declaration")
-	return statement.NewVarStmt(name, initializer)
+	return statement.NewVarStmt(*name, initializer)
 }
 
 func (p Parser) expression() (expression.Expr, error) {
@@ -147,7 +147,7 @@ func (p Parser) equality() (expression.Expr, error) {
 		if e != nil {
 			return nil, e
 		}
-		expr = &expression.ExprBinary{Left: expr, Operator: operator, Right: right}
+		expr = &expression.ExprBinary{Left: expr, Operator: *operator, Right: right}
 	}
 	return expr, nil
 }
@@ -166,7 +166,7 @@ func (p Parser) comparison() (expression.Expr, error) {
 		if e != nil {
 			return nil, e
 		}
-		expr = &expression.ExprBinary{Left: expr, Operator: operator, Right: right}
+		expr = &expression.ExprBinary{Left: expr, Operator: *operator, Right: right}
 	}
 	return expr, nil
 }
@@ -185,7 +185,7 @@ func (p Parser) addition() (expression.Expr, error) {
 		if e != nil {
 			return nil, e
 		}
-		expr = &expression.ExprBinary{Left: expr, Operator: operator, Right: right}
+		expr = &expression.ExprBinary{Left: expr, Operator: *operator, Right: right}
 	}
 	return expr, nil
 }
@@ -205,7 +205,7 @@ func (p Parser) multiplication() (expression.Expr, error) {
 		if e != nil {
 			return nil, e
 		}
-		expr = &expression.ExprBinary{Left: expr, Operator: operator, Right: right}
+		expr = &expression.ExprBinary{Left: expr, Operator: *operator, Right: right}
 	}
 	return expr, nil
 }
@@ -217,7 +217,7 @@ func (p Parser) unary() (expression.Expr, error) {
 		if e != nil {
 			return nil, e
 		}
-		return &expression.ExprUnary{Operator: operator, Right: right}, nil
+		return &expression.ExprUnary{Operator: *operator, Right: right}, nil
 	}
 	return p.primary()
 }
@@ -239,7 +239,7 @@ func (p Parser) primary() (expression.Expr, error) {
 		return &expression.ExprLiteral{p.previous().Literal}, nil
 	}
 	if p.match(token.IDENTIFIER) {
-		return &expression.ExprVar{p.previous()}, nil
+		return &expression.ExprVar{*p.previous()}, nil
 	}
 	if p.match(token.LEFT_PAREN) {
 		expr, err := p.expression()
@@ -252,9 +252,10 @@ func (p Parser) primary() (expression.Expr, error) {
 	return nil, p.parse_err(p.peek(), "Expect expression.")
 }
 
-func (p Parser) consume(token_type token.TokenType, message string) token.Token {
+func (p Parser) consume(token_type token.TokenType, message string) *token.Token {
 	if !p.check(token_type) {
-		panic(p.parse_err(p.peek(), message))
+		fmt.Println(p.parse_err(p.peek(), message))
+		return nil
 	}
 	return p.advance()
 }
