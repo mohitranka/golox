@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"github.com/mohitranka/golox/err"
 	"github.com/mohitranka/golox/expression"
 	"github.com/mohitranka/golox/statement"
@@ -105,7 +106,9 @@ func (p Parser) assignment() (expression.Expr, error) {
 			name := token.Name
 			return &expression.ExprAssign{Name: name, Value: value}, nil
 		} else {
-			panic(&err.VarError{Name: equals.Lexeme, Msg: "Invalid assignment target"})
+			e := &err.VarError{Name: equals.Lexeme, Msg: "Invalid assignment target"}
+			fmt.Println(e)
+			return nil, e
 		}
 	}
 	return expr, nil
