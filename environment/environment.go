@@ -22,27 +22,25 @@ func (e Environment) Define(name string, value interface{}) {
 }
 
 func (e Environment) Get(name string) interface{} {
+	if value, ok := e.Values[name]; ok {
+		return value
+	}
 	if e.Enclosing != nil {
 		return e.Enclosing.Get(name)
 	}
-	value, ok := e.Values[name]
-	if !ok {
-		fmt.Println(&err.VarError{Name: name, Msg: "Undefined variable"})
-		return nil
-	}
-	return value
+	fmt.Println(&err.VarError{Name: name, Msg: "Undefined variable"})
+	return nil
 }
 
 func (e Environment) Assign(name string, value interface{}) {
+	if _, ok := e.Values[name]; ok {
+		e.Values[name] = value
+		return
+	}
 	if e.Enclosing != nil {
 		e.Enclosing.Assign(name, value)
 		return
 	}
-	_, ok := e.Values[name]
-	if !ok {
-		fmt.Println(&err.VarError{Name: name, Msg: "Undefined variable"})
-		return
-	}
-	e.Values[name] = value
 
+	fmt.Println(&err.VarError{Name: name, Msg: "Undefined variable"})
 }
