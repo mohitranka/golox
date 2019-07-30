@@ -85,7 +85,30 @@ func (p Parser) varDeclaration() statement.Stmt {
 }
 
 func (p Parser) expression() (expression.Expr, error) {
-	return p.equality()
+	return p.assignment()
+}
+
+func (p Parser) assignment() (expression.Expr, error) {
+	expr, e := p.equality()
+	if e != nil {
+		return nil, e
+	}
+
+	if p.match(token.EQUAL) {
+		equals := p.previous()
+		value, e := p.assignment()
+		if e != nil {
+			return nil, e
+		}
+		token, ok := expr.(*expression.ExprVar)
+		if ok {
+			name := token.Name
+			return &expression.ExprAssign{Name: name, Value: value}, nil
+		} else {
+			panic(&err.VarError{Name: equals.Lexeme, Msg: "Invalid assignment target"})
+		}
+	}
+	return expr, nil
 }
 
 func (p Parser) statement() statement.Stmt {

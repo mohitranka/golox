@@ -28,7 +28,7 @@ func (i Interpreter) VisitGroupingExpr(expr *expression.ExprGrouping) interface{
 }
 
 func (i Interpreter) VisitVarExpr(expr *expression.ExprVar) interface{} {
-	return i.Env.Get(expr.Name)
+	return i.Env.Get(expr.Name.Lexeme)
 }
 
 func (i Interpreter) Interpret(statements []statement.Stmt) {
@@ -46,7 +46,9 @@ func (i Interpreter) evaluate(expr expression.Expr) interface{} {
 }
 
 func (i Interpreter) VisitAssignExpr(expr *expression.ExprAssign) interface{} {
-	return nil //TODO: To be implemented. Placeholder implementation so that Interpreter is an interface of ExprVisitor
+	value := i.evaluate(expr.Value)
+	i.Env.Assign(expr.Name.Lexeme, value)
+	return value
 }
 
 func (i Interpreter) VisitUnaryExpr(expr *expression.ExprUnary) interface{} {
