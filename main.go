@@ -73,10 +73,10 @@ func (l Lox) run(source string) {
 	s := scanner.NewScanner(source)
 	tokens := s.ScanTokens()
 	p := parser.NewParser(tokens)
-	e := p.Parse()
+	stmts := p.Parse()
 	if l.HadError {
 		return
 	}
 	i := &interpreter.Interpreter{}
-	i.Interpret(e)
+	i.Interpret(stmts)
 }

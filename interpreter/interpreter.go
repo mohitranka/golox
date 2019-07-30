@@ -3,6 +3,7 @@ package interpreter
 import (
 	"fmt"
 	"github.com/mohitranka/golox/expression"
+	"github.com/mohitranka/golox/statement"
 	"github.com/mohitranka/golox/token"
 	"reflect"
 )
@@ -22,10 +23,14 @@ func (i Interpreter) VisitVarExpr(expr *expression.ExprVar) interface{} {
 	return nil //TODO: To be implemented. Placeholder implementation so that Interpreter is an interface of ExprVisitor
 }
 
-func (i Interpreter) Interpret(expr expression.Expr) {
-	obj := i.evaluate(expr)
-	str := fmt.Sprintf("%v", obj)
-	fmt.Println(str)
+func (i Interpreter) Interpret(statements []statement.Stmt) {
+	for _, statement := range statements {
+		i.execute(statement)
+	}
+}
+
+func (i Interpreter) execute(stmt statement.Stmt) interface{} {
+	return stmt.Accept(i)
 }
 
 func (i Interpreter) evaluate(expr expression.Expr) interface{} {
@@ -87,5 +92,15 @@ func (i Interpreter) VisitBinaryExpr(expr *expression.ExprBinary) interface{} {
 	case token.STAR:
 		return left.(float64) * right.(float64)
 	}
+	return nil
+}
+
+func (i Interpreter) VisitExpressionStmt(stmt *statement.ExpressionStmt) interface{} {
+	return i.evaluate(stmt.Expression)
+}
+
+func (i Interpreter) VisitPrintStmt(stmt *statement.PrintStmt) interface{} {
+	value := i.evaluate(stmt.Expression)
+	fmt.Printf("%v\n", value)
 	return nil
 }

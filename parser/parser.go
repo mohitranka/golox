@@ -3,6 +3,7 @@ package parser
 import (
 	"github.com/mohitranka/golox/err"
 	"github.com/mohitranka/golox/expression"
+	"github.com/mohitranka/golox/statement"
 	"github.com/mohitranka/golox/token"
 )
 
@@ -55,16 +56,38 @@ func (p Parser) previous() token.Token {
 	return *p.tokens[current-1]
 }
 
-func (p Parser) Parse() expression.Expr {
-	expr, e := p.expression()
-	if e != nil {
-		panic(&err.RuntimeError{Line: p.peek().Line, Msg: e.Error()})
+func (p Parser) Parse() []statement.Stmt {
+	statements := make([]statement.Stmt, 0)
+	for {
+		if p.isAtEnd() {
+			break
+		}
+		statements = append(statements, p.statement())
 	}
-	return expr
+	return statements
 }
 
 func (p Parser) expression() (expression.Expr, error) {
 	return p.equality()
+}
+
+func (p Parser) statement() statement.Stmt {
+	if p.match(token.PRINT) {
+		return p.printStatement()
+	}
+	return p.expressionStatement()
+}
+
+func (p Parser) printStatement() statement.Stmt {
+	value, _ := p.expression()
+	p.consume(token.SEMICOLON, "Expect ';' after value.")
+	return statement.NewPrintStmt(value)
+}
+
+func (p Parser) expressionStatement() statement.Stmt {
+	expr, _ := p.expression()
+	p.consume(token.SEMICOLON, "Expect ';' after expression.")
+	return statement.NewExpressionStmt(expr)
 }
 
 func (p Parser) equality() (expression.Expr, error) {
