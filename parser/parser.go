@@ -117,8 +117,22 @@ func (p Parser) assignment() (expression.Expr, error) {
 func (p Parser) statement() statement.Stmt {
 	if p.match(token.PRINT) {
 		return p.printStatement()
+	} else if p.match(token.LEFT_BRACE) {
+		return statement.NewBlockStmt(p.block())
 	}
 	return p.expressionStatement()
+}
+
+func (p Parser) block() []statement.Stmt {
+	statements := make([]statement.Stmt, 0)
+	for {
+		if p.check(token.RIGHT_BRACE) || p.isAtEnd() {
+			break
+		}
+		statements = append(statements, p.declaration())
+	}
+	p.consume(token.RIGHT_BRACE, "Expect '}' after block.")
+	return statements
 }
 
 func (p Parser) printStatement() statement.Stmt {

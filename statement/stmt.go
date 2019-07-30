@@ -45,3 +45,15 @@ func NewVarStmt(name token.Token, initializer expression.Expr) Stmt {
 func (expr *VarStmt) Accept(v StmtVisitor) interface{} {
 	return v.VisitVarStmt(expr)
 }
+
+type BlockStmt struct {
+	Statements []Stmt
+}
+
+func NewBlockStmt(statements []Stmt) Stmt {
+	return &BlockStmt{Statements: statements}
+}
+
+func (expr *BlockStmt) Accept(v StmtVisitor) interface{} {
+	return v.VisitBlockStmt(expr)
+}
