@@ -7,4 +7,5 @@ type ExprVisitor interface {
 	VisitLiteralExpr(el *ExprLiteral) interface{}
 	VisitUnaryExpr(eu *ExprUnary) interface{}
 	VisitVarExpr(ev *ExprVar) interface{}
+	VisitLogicalExpr(eb *ExprLogical) interface{}
 }

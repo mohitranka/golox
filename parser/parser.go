@@ -90,7 +90,7 @@ func (p Parser) expression() (expression.Expr, error) {
 }
 
 func (p Parser) assignment() (expression.Expr, error) {
-	expr, e := p.equality()
+	expr, e := p.or()
 	if e != nil {
 		return nil, e
 	}
@@ -110,6 +110,47 @@ func (p Parser) assignment() (expression.Expr, error) {
 			fmt.Println(e)
 			return nil, e
 		}
+	}
+	return expr, nil
+}
+
+func (p Parser) or() (expression.Expr, error) {
+	expr, e := p.and()
+	if e != nil {
+		return nil, e
+	}
+
+	for {
+		if !p.match(token.OR) {
+			break
+		}
+
+		operator := p.previous()
+		right, e := p.and()
+		if e != nil {
+			return nil, e
+		}
+		expr = &expression.ExprLogical{Left: expr, Operator: *operator, Right: right}
+	}
+	return expr, nil
+}
+
+func (p Parser) and() (expression.Expr, error) {
+	expr, e := p.equality()
+	if e != nil {
+		return nil, e
+	}
+
+	for {
+		if !p.match(token.AND) {
+			break
+		}
+		operator := p.previous()
+		right, e := p.equality()
+		if e != nil {
+			return nil, e
+		}
+		expr = &expression.ExprLogical{Left: expr, Operator: *operator, Right: right}
 	}
 	return expr, nil
 }

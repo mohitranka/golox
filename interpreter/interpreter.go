@@ -31,6 +31,20 @@ func (i Interpreter) VisitVarExpr(expr *expression.ExprVar) interface{} {
 	return i.Env.Get(expr.Name.Lexeme)
 }
 
+func (i Interpreter) VisitLogicalExpr(expr *expression.ExprLogical) interface{} {
+	left := i.evaluate(expr.Left)
+	if expr.Operator.Type == token.OR {
+		if i.isTruthy(left) {
+			return left
+		}
+	} else {
+		if !i.isTruthy(left) {
+			return left
+		}
+	}
+	return i.evaluate(expr.Right)
+}
+
 func (i Interpreter) Interpret(statements []statement.Stmt) {
 	for _, statement := range statements {
 		i.execute(statement)

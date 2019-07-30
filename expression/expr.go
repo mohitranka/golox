@@ -36,6 +36,12 @@ type ExprVar struct {
 	Name token.Token
 }
 
+type ExprLogical struct {
+	Left     Expr
+	Operator token.Token
+	Right    Expr
+}
+
 func (e *ExprAssign) Accept(v ExprVisitor) interface{} { return v.VisitAssignExpr(e) }
 
 func (e *ExprBinary) Accept(v ExprVisitor) interface{} { return v.VisitBinaryExpr(e) }
@@ -47,3 +53,5 @@ func (e *ExprLiteral) Accept(v ExprVisitor) interface{} { return v.VisitLiteralE
 func (e *ExprUnary) Accept(v ExprVisitor) interface{} { return v.VisitUnaryExpr(e) }
 
 func (e *ExprVar) Accept(v ExprVisitor) interface{} { return v.VisitVarExpr(e) }
+
+func (e *ExprLogical) Accept(v ExprVisitor) interface{} { return v.VisitLogicalExpr(e) }
