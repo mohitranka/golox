@@ -165,3 +165,13 @@ func (i Interpreter) VisitIfStmt(stmt *statement.IfStmt) interface{} {
 	}
 	return nil
 }
+
+func (i Interpreter) VisitWhileStmt(stmt *statement.WhileStmt) interface{} {
+	for {
+		if !i.isTruthy(i.evaluate(stmt.Condition)) {
+			break
+		}
+		i.execute(stmt.Body)
+	}
+	return nil
+}

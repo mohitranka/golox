@@ -71,3 +71,16 @@ func NewBlockStmt(statements []Stmt) Stmt {
 func (expr *BlockStmt) Accept(v StmtVisitor) interface{} {
 	return v.VisitBlockStmt(expr)
 }
+
+type WhileStmt struct {
+	Condition expression.Expr
+	Body      Stmt
+}
+
+func NewWhileStmt(condition expression.Expr, body Stmt) Stmt {
+	return &WhileStmt{Condition: condition, Body: body}
+}
+
+func (expr *WhileStmt) Accept(v StmtVisitor) interface{} {
+	return v.VisitWhileStmt(expr)
+}

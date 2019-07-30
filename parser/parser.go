@@ -162,6 +162,9 @@ func (p Parser) statement() statement.Stmt {
 	if p.match(token.PRINT) {
 		return p.printStatement()
 	}
+	if p.match(token.WHILE) {
+		return p.whileStatement()
+	}
 	if p.match(token.LEFT_BRACE) {
 		return statement.NewBlockStmt(p.block())
 	}
@@ -196,6 +199,14 @@ func (p Parser) printStatement() statement.Stmt {
 	value, _ := p.expression()
 	p.consume(token.SEMICOLON, "Expect ';' after value.")
 	return statement.NewPrintStmt(value)
+}
+
+func (p Parser) whileStatement() statement.Stmt {
+	p.consume(token.LEFT_PAREN, "Expect '(' after while.")
+	condition, _ := p.expression()
+	p.consume(token.RIGHT_PAREN, "Expect ')' after condition")
+	body := p.statement()
+	return statement.NewWhileStmt(condition, body)
 }
 
 func (p Parser) expressionStatement() statement.Stmt {
