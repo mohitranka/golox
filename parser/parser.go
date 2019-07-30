@@ -156,6 +156,9 @@ func (p Parser) and() (expression.Expr, error) {
 }
 
 func (p Parser) statement() statement.Stmt {
+	if p.match(token.FOR) {
+		return p.forStatement()
+	}
 	if p.match(token.IF) {
 		return p.ifStatement()
 	}
@@ -199,6 +202,51 @@ func (p Parser) printStatement() statement.Stmt {
 	value, _ := p.expression()
 	p.consume(token.SEMICOLON, "Expect ';' after value.")
 	return statement.NewPrintStmt(value)
+}
+
+func (p Parser) forStatement() statement.Stmt {
+	p.consume(token.LEFT_PAREN, "Expect '(' after for")
+	var initializer statement.Stmt
+	if p.match(token.SEMICOLON) {
+		initializer = nil
+	} else if p.match(token.VAR) {
+		initializer = p.varDeclaration()
+	} else {
+		initializer = p.expressionStatement()
+	}
+
+	var condition expression.Expr = nil
+	if !p.check(token.SEMICOLON) {
+		condition, _ = p.expression()
+	}
+	p.consume(token.SEMICOLON, "Expect ';' after loop condition")
+
+	var increment expression.Expr = nil
+
+	if !p.check(token.RIGHT_PAREN) {
+		increment, _ = p.expression()
+	}
+	p.consume(token.RIGHT_PAREN, "Expect ')' after for clauses")
+	body := p.statement()
+
+	if increment != nil {
+		statements := make([]statement.Stmt, 0)
+		statements = append(statements, body, statement.NewExpressionStmt(increment))
+		body = statement.NewBlockStmt(statements)
+	}
+
+	if condition == nil {
+		condition = &expression.ExprLiteral{true}
+	}
+
+	body = statement.NewWhileStmt(condition, body)
+
+	if initializer != nil {
+		statements := make([]statement.Stmt, 0)
+		statements = append(statements, initializer, body)
+		body = statement.NewBlockStmt(statements)
+	}
+	return body
 }
 
 func (p Parser) whileStatement() statement.Stmt {
