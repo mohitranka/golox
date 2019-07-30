@@ -115,9 +115,13 @@ func (p Parser) assignment() (expression.Expr, error) {
 }
 
 func (p Parser) statement() statement.Stmt {
+	if p.match(token.IF) {
+		return p.ifStatement()
+	}
 	if p.match(token.PRINT) {
 		return p.printStatement()
-	} else if p.match(token.LEFT_BRACE) {
+	}
+	if p.match(token.LEFT_BRACE) {
 		return statement.NewBlockStmt(p.block())
 	}
 	return p.expressionStatement()
@@ -133,6 +137,18 @@ func (p Parser) block() []statement.Stmt {
 	}
 	p.consume(token.RIGHT_BRACE, "Expect '}' after block.")
 	return statements
+}
+
+func (p Parser) ifStatement() statement.Stmt {
+	p.consume(token.LEFT_PAREN, "Expect '(' after 'if'.")
+	condition, _ := p.expression()
+	p.consume(token.RIGHT_PAREN, "Expect ')' after if condition")
+	thenBranch := p.statement()
+	var elseBranch statement.Stmt
+	if p.match(token.ELSE) {
+		elseBranch = p.statement()
+	}
+	return statement.NewIfStmt(condition, thenBranch, elseBranch)
 }
 
 func (p Parser) printStatement() statement.Stmt {

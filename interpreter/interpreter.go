@@ -62,11 +62,16 @@ func (i Interpreter) VisitUnaryExpr(expr *expression.ExprUnary) interface{} {
 	return nil
 }
 
-func (i Interpreter) isTruthy(obj float64) bool {
+func (i Interpreter) isTruthy(obj interface{}) bool {
+	if obj == nil {
+		return false
+	}
+	if obj == string("") {
+		return false
+	}
 	if obj == float64(0) {
 		return false
 	}
-
 	return true
 }
 
@@ -136,4 +141,13 @@ func (i Interpreter) executeBlock(statements []statement.Stmt, env *environment.
 		i.execute(statement)
 	}
 	i.Env = previous
+}
+
+func (i Interpreter) VisitIfStmt(stmt *statement.IfStmt) interface{} {
+	if i.isTruthy(i.evaluate(stmt.Condition)) {
+		i.execute(stmt.ThenBranch)
+	} else if stmt.ElseBranch != nil {
+		i.execute(stmt.ElseBranch)
+	}
+	return nil
 }

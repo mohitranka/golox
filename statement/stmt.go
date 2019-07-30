@@ -46,6 +46,20 @@ func (expr *VarStmt) Accept(v StmtVisitor) interface{} {
 	return v.VisitVarStmt(expr)
 }
 
+type IfStmt struct {
+	Condition  expression.Expr
+	ThenBranch Stmt
+	ElseBranch Stmt
+}
+
+func NewIfStmt(condition expression.Expr, thenbranch Stmt, elsebranch Stmt) Stmt {
+	return &IfStmt{Condition: condition, ThenBranch: thenbranch, ElseBranch: elsebranch}
+}
+
+func (expr *IfStmt) Accept(v StmtVisitor) interface{} {
+	return v.VisitIfStmt(expr)
+}
+
 type BlockStmt struct {
 	Statements []Stmt
 }

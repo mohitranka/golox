@@ -5,4 +5,5 @@ type StmtVisitor interface {
 	VisitPrintStmt(stmt *PrintStmt) interface{}
 	VisitVarStmt(stmt *VarStmt) interface{}
 	VisitBlockStmt(stmt *BlockStmt) interface{}
+	VisitIfStmt(stmt *IfStmt) interface{}
 }
