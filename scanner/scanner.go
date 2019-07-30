@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"fmt"
 	"github.com/mohitranka/golox/err"
 	"github.com/mohitranka/golox/token"
 	"strconv"
@@ -133,7 +134,8 @@ func (s Scanner) scanToken() {
 		} else if s.isAlpha(c) {
 			s.identifierTokenizer()
 		} else {
-			panic(&err.RuntimeError{line, "Unexpected character."})
+			fmt.Println(&err.RuntimeError{line, "Unexpected character."})
+			return
 		}
 	}
 }

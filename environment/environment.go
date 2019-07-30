@@ -1,6 +1,7 @@
 package environment
 
 import (
+	"fmt"
 	"github.com/mohitranka/golox/err"
 )
 
@@ -21,7 +22,8 @@ func (e Environment) Define(name string, value interface{}) {
 func (e Environment) Get(name string) interface{} {
 	value, ok := e.Values[name]
 	if !ok {
-		panic(&err.VarError{Name: name, Msg: "Undefined variable"})
+		fmt.Println(&err.VarError{Name: name, Msg: "Undefined variable"})
+		return nil
 	}
 	return value
 }
@@ -29,7 +31,8 @@ func (e Environment) Get(name string) interface{} {
 func (e Environment) Assign(name string, value interface{}) {
 	_, ok := e.Values[name]
 	if !ok {
-		panic(&err.VarError{Name: name, Msg: "Undefined variable"})
+		fmt.Println(&err.VarError{Name: name, Msg: "Undefined variable"})
+		return
 	}
 	e.Values[name] = value
 
