@@ -16,12 +16,14 @@ import (
 type Lox struct {
 	HadError        bool
 	HadRuntimeError bool
+	Interpreter     *interpreter.Interpreter
 }
 
 func NewLox() *Lox {
 	l := new(Lox)
 	l.HadError = false
 	l.HadRuntimeError = false
+	l.Interpreter = interpreter.NewInterpreter()
 	return l
 }
 
@@ -77,6 +79,5 @@ func (l Lox) run(source string) {
 	if l.HadError {
 		return
 	}
-	i := &interpreter.Interpreter{}
-	i.Interpret(stmts)
+	l.Interpreter.Interpret(stmts)
 }

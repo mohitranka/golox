@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"fmt"
+	"github.com/mohitranka/golox/environment"
 	"github.com/mohitranka/golox/expression"
 	"github.com/mohitranka/golox/statement"
 	"github.com/mohitranka/golox/token"
@@ -9,6 +10,13 @@ import (
 )
 
 type Interpreter struct {
+	Env *environment.Environment
+}
+
+func NewInterpreter() *Interpreter {
+	ni := new(Interpreter)
+	ni.Env = environment.NewEnvironment()
+	return ni
 }
 
 func (i Interpreter) VisitLiteralExpr(expr *expression.ExprLiteral) interface{} {
@@ -20,7 +28,7 @@ func (i Interpreter) VisitGroupingExpr(expr *expression.ExprGrouping) interface{
 }
 
 func (i Interpreter) VisitVarExpr(expr *expression.ExprVar) interface{} {
-	return nil //TODO: To be implemented. Placeholder implementation so that Interpreter is an interface of ExprVisitor
+	return i.Env.Get(expr.Name)
 }
 
 func (i Interpreter) Interpret(statements []statement.Stmt) {
@@ -102,5 +110,14 @@ func (i Interpreter) VisitExpressionStmt(stmt *statement.ExpressionStmt) interfa
 func (i Interpreter) VisitPrintStmt(stmt *statement.PrintStmt) interface{} {
 	value := i.evaluate(stmt.Expression)
 	fmt.Printf("%v\n", value)
+	return nil
+}
+
+func (i Interpreter) VisitVarStmt(stmt *statement.VarStmt) interface{} {
+	var value interface{}
+	if stmt.Initializer != nil {
+		value = i.evaluate(stmt.Initializer)
+	}
+	i.Env.Define(stmt.Name.Lexeme, value)
 	return nil
 }
