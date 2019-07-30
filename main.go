@@ -1,11 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
+
+	//Third party
+	"github.com/chzyer/readline"
 
 	//Local packages
 	"github.com/mohitranka/golox/interpreter"
@@ -60,16 +61,21 @@ func (l Lox) runFile(path string) {
 }
 
 func (l Lox) runPrompt() {
-	reader := bufio.NewReader(os.Stdin)
+	rl, e := readline.New("> ")
+	if e != nil {
+		panic(e)
+	}
+	defer rl.Close()
+
 	for {
-		fmt.Print("> ")
-		text, _ := reader.ReadString('\n')
-		// convert CRLF to LF
-		text = strings.Replace(text, "\n", "", -1)
-		if text == "exit" {
+		line, e := rl.Readline()
+		if e != nil {
+			break
+		}
+		if line == "exit" {
 			os.Exit(0)
 		}
-		l.run(text)
+		l.run(line)
 		l.HadError = false
 	}
 }
