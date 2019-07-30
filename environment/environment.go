@@ -21,15 +21,16 @@ func (e Environment) Define(name string, value interface{}) {
 func (e Environment) Get(name string) interface{} {
 	value, ok := e.Values[name]
 	if !ok {
-		panic(&err.VarError{Name: name, Msg: "Undefined variable '%s'"})
+		panic(&err.VarError{Name: name, Msg: "Undefined variable"})
 	}
 	return value
 }
 
 func (e Environment) Assign(name string, value interface{}) {
 	_, ok := e.Values[name]
-	if ok {
-		e.Values[name] = value
+	if !ok {
+		panic(&err.VarError{Name: name, Msg: "Undefined variable"})
 	}
-	panic(&err.VarError{Name: name, Msg: "Undefined variable '%s'"})
+	e.Values[name] = value
+
 }
