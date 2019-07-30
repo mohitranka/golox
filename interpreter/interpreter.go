@@ -80,13 +80,16 @@ func (i Interpreter) isTruthy(obj interface{}) bool {
 	if obj == nil {
 		return false
 	}
-	if obj == string("") {
-		return false
+	switch obj.(type) {
+	case string:
+		return !(obj.(string) == "")
+	case int, float64:
+		return !(obj.(float64) == float64(0))
+	case bool:
+		return bool(obj.(bool))
+	default:
+		return true
 	}
-	if obj == float64(0) {
-		return false
-	}
-	return true
 }
 
 func (i Interpreter) VisitBinaryExpr(expr *expression.ExprBinary) interface{} {
