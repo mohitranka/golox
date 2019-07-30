@@ -66,6 +66,9 @@ func (l Lox) runPrompt() {
 		text, _ := reader.ReadString('\n')
 		// convert CRLF to LF
 		text = strings.Replace(text, "\n", "", -1)
+		if text == "exit" {
+			os.Exit(0)
+		}
 		l.run(text)
 		l.HadError = false
 	}
