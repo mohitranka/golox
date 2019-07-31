@@ -103,7 +103,7 @@ func (s Scanner) scanToken() {
 		if s.match('=') {
 			s.addToken(token.LESS_EQUAL)
 		} else {
-			s.addToken(token.EQUAL)
+			s.addToken(token.LESS)
 		}
 	case '>':
 		if s.match('=') {
