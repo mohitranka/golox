@@ -65,10 +65,31 @@ func (p Parser) Parse() []Stmt {
 }
 
 func (p Parser) declaration() Stmt {
+	if p.match(FUN) {
+		return p.function("function")
+	}
 	if p.match(VAR) {
 		return p.varDeclaration()
 	}
 	return p.statement()
+}
+
+func (p Parser) function(kind string) Stmt {
+	name := p.consume(IDENTIFIER, fmt.Sprintf("Expect %s name.", kind))
+	p.consume(LEFT_PAREN, fmt.Sprintf("Expect '(' after %s name.", kind))
+	params := make([]Token, 0)
+	if !p.check(RIGHT_PAREN) {
+		for {
+			params = append(params, *p.consume(IDENTIFIER, "Expect ')' after parameters."))
+			if !p.match(COMMA) {
+				break
+			}
+		}
+	}
+	p.consume(RIGHT_PAREN, "Expect ')' after parameters")
+	p.consume(LEFT_BRACE, fmt.Sprintf("Expect '{' before %s body.", kind))
+	body := p.block()
+	return NewFunctionStmt(*name, params, body)
 }
 
 func (p Parser) varDeclaration() Stmt {

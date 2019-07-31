@@ -79,3 +79,17 @@ func NewWhileStmt(condition Expr, body Stmt) Stmt {
 func (expr *WhileStmt) Accept(v StmtVisitor) interface{} {
 	return v.VisitWhileStmt(expr)
 }
+
+type FunctionStmt struct {
+	Name   Token
+	Params []Token
+	Body   []Stmt
+}
+
+func NewFunctionStmt(name Token, params []Token, body []Stmt) Stmt {
+	return &FunctionStmt{Name: name, Params: params, Body: body}
+}
+
+func (expr *FunctionStmt) Accept(v StmtVisitor) interface{} {
+	return v.VisitFunctionStmt(expr)
+}

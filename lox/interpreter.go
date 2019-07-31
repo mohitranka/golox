@@ -6,12 +6,15 @@ import (
 )
 
 type Interpreter struct {
-	Env *Environment
+	Env       *Environment
+	GlobalEnv *Environment
 }
 
 func NewInterpreter() *Interpreter {
 	ni := new(Interpreter)
 	ni.Env = NewEnvironment(nil)
+	ni.GlobalEnv = ni.Env
+	ni.GlobalEnv.Define("clock", &Clock{})
 	return ni
 }
 
@@ -94,9 +97,17 @@ func (i Interpreter) VisitCallExpr(expr *ExprCall) interface{} {
 	for _, arg := range expr.Arguments {
 		arguments = append(arguments, i.evaluate(*arg))
 	}
-
-	f := callee.(Callable)
-	return f.Call(&i, arguments)
+	f, ok := callee.(Callable)
+	if ok {
+		if len(arguments) != f.Arity() {
+			fmt.Printf("Expected %d arguments but got %d\n", f.Arity(), len(arguments))
+			return nil
+		}
+		return f.Call(&i, arguments)
+	} else {
+		fmt.Printf("Can only call functions and classes, not %v.\n", reflect.TypeOf(callee))
+		return nil
+	}
 }
 
 func (i Interpreter) VisitBinaryExpr(expr *ExprBinary) interface{} {
@@ -154,11 +165,11 @@ func (i Interpreter) VisitVarStmt(stmt *VarStmt) interface{} {
 }
 
 func (i Interpreter) VisitBlockStmt(stmt *BlockStmt) interface{} {
-	i.executeBlock(stmt.Statements, NewEnvironment(i.Env))
+	i.ExecuteBlock(stmt.Statements, NewEnvironment(i.Env))
 	return nil
 }
 
-func (i Interpreter) executeBlock(statements []Stmt, env *Environment) {
+func (i Interpreter) ExecuteBlock(statements []Stmt, env *Environment) {
 	previous := i.Env
 	i.Env = env
 	for _, statement := range statements {
@@ -183,5 +194,11 @@ func (i Interpreter) VisitWhileStmt(stmt *WhileStmt) interface{} {
 		}
 		i.execute(stmt.Body)
 	}
+	return nil
+}
+
+func (i Interpreter) VisitFunctionStmt(stmt *FunctionStmt) interface{} {
+	f := NewFunction(*stmt)
+	i.Env.Define(stmt.Name.Lexeme, f)
 	return nil
 }
