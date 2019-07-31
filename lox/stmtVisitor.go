@@ -8,4 +8,5 @@ type StmtVisitor interface {
 	VisitIfStmt(stmt *IfStmt) interface{}
 	VisitWhileStmt(stmt *WhileStmt) interface{}
 	VisitFunctionStmt(stmt *FunctionStmt) interface{}
+	VisitReturnStmt(stmt *ReturnStmt) interface{}
 }

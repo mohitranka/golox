@@ -12,8 +12,8 @@ func NewExpressionStmt(expression Expr) Stmt {
 	return &ExpressionStmt{Expression: expression}
 }
 
-func (expr *ExpressionStmt) Accept(v StmtVisitor) interface{} {
-	return v.VisitExpressionStmt(expr)
+func (stmt *ExpressionStmt) Accept(v StmtVisitor) interface{} {
+	return v.VisitExpressionStmt(stmt)
 }
 
 type PrintStmt struct {
@@ -24,8 +24,8 @@ func NewPrintStmt(expression Expr) Stmt {
 	return &PrintStmt{Expression: expression}
 }
 
-func (expr *PrintStmt) Accept(v StmtVisitor) interface{} {
-	return v.VisitPrintStmt(expr)
+func (stmt *PrintStmt) Accept(v StmtVisitor) interface{} {
+	return v.VisitPrintStmt(stmt)
 }
 
 type VarStmt struct {
@@ -37,8 +37,8 @@ func NewVarStmt(name Token, initializer Expr) Stmt {
 	return &VarStmt{Name: name, Initializer: initializer}
 }
 
-func (expr *VarStmt) Accept(v StmtVisitor) interface{} {
-	return v.VisitVarStmt(expr)
+func (stmt *VarStmt) Accept(v StmtVisitor) interface{} {
+	return v.VisitVarStmt(stmt)
 }
 
 type IfStmt struct {
@@ -51,8 +51,8 @@ func NewIfStmt(condition Expr, thenbranch Stmt, elsebranch Stmt) Stmt {
 	return &IfStmt{Condition: condition, ThenBranch: thenbranch, ElseBranch: elsebranch}
 }
 
-func (expr *IfStmt) Accept(v StmtVisitor) interface{} {
-	return v.VisitIfStmt(expr)
+func (stmt *IfStmt) Accept(v StmtVisitor) interface{} {
+	return v.VisitIfStmt(stmt)
 }
 
 type BlockStmt struct {
@@ -63,8 +63,8 @@ func NewBlockStmt(statements []Stmt) Stmt {
 	return &BlockStmt{Statements: statements}
 }
 
-func (expr *BlockStmt) Accept(v StmtVisitor) interface{} {
-	return v.VisitBlockStmt(expr)
+func (stmt *BlockStmt) Accept(v StmtVisitor) interface{} {
+	return v.VisitBlockStmt(stmt)
 }
 
 type WhileStmt struct {
@@ -76,8 +76,8 @@ func NewWhileStmt(condition Expr, body Stmt) Stmt {
 	return &WhileStmt{Condition: condition, Body: body}
 }
 
-func (expr *WhileStmt) Accept(v StmtVisitor) interface{} {
-	return v.VisitWhileStmt(expr)
+func (stmt *WhileStmt) Accept(v StmtVisitor) interface{} {
+	return v.VisitWhileStmt(stmt)
 }
 
 type FunctionStmt struct {
@@ -90,6 +90,19 @@ func NewFunctionStmt(name Token, params []Token, body []Stmt) Stmt {
 	return &FunctionStmt{Name: name, Params: params, Body: body}
 }
 
-func (expr *FunctionStmt) Accept(v StmtVisitor) interface{} {
-	return v.VisitFunctionStmt(expr)
+func (stmt *FunctionStmt) Accept(v StmtVisitor) interface{} {
+	return v.VisitFunctionStmt(stmt)
+}
+
+type ReturnStmt struct {
+	Keyword Token
+	Value   Expr
+}
+
+func NewReturnStmt(keyword Token, value Expr) Stmt {
+	return &ReturnStmt{Keyword: keyword, Value: value}
+}
+
+func (stmt *ReturnStmt) Accept(v StmtVisitor) interface{} {
+	return v.VisitReturnStmt(stmt)
 }

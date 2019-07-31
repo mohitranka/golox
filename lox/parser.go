@@ -182,6 +182,9 @@ func (p Parser) statement() Stmt {
 	if p.match(PRINT) {
 		return p.printStatement()
 	}
+	if p.match(RETURN) {
+		return p.returnStatement()
+	}
 	if p.match(WHILE) {
 		return p.whileStatement()
 	}
@@ -189,6 +192,21 @@ func (p Parser) statement() Stmt {
 		return NewBlockStmt(p.block())
 	}
 	return p.expressionStatement()
+}
+
+func (p Parser) returnStatement() Stmt {
+	keyword := p.previous()
+	var value Expr = nil
+	var e error
+	if !p.check(SEMICOLON) {
+		value, e = p.expression()
+		if e != nil {
+			fmt.Println("Error while getting expression for the return statement.")
+			return nil
+		}
+	}
+	p.consume(SEMICOLON, "Expect ';' after return value.")
+	return NewReturnStmt(*keyword, value)
 }
 
 func (p Parser) block() []Stmt {

@@ -202,3 +202,11 @@ func (i Interpreter) VisitFunctionStmt(stmt *FunctionStmt) interface{} {
 	i.Env.Define(stmt.Name.Lexeme, f)
 	return nil
 }
+
+func (i Interpreter) VisitReturnStmt(stmt *ReturnStmt) interface{} {
+	var value interface{} = nil
+	if stmt.Value != nil {
+		value = i.evaluate(stmt.Value)
+	}
+	return &Return{Value: value}
+}
