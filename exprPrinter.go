@@ -1,4 +1,4 @@
-package expression
+package lox
 
 import (
 	"bytes"

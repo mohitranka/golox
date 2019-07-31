@@ -1,21 +1,17 @@
-package expression
-
-import (
-	"github.com/mohitranka/golox/token"
-)
+package lox
 
 type Expr interface {
 	Accept(v ExprVisitor) interface{}
 }
 
 type ExprAssign struct {
-	Name  token.Token
+	Name  Token
 	Value Expr
 }
 
 type ExprBinary struct {
 	Left     Expr
-	Operator token.Token
+	Operator Token
 	Right    Expr
 }
 
@@ -28,18 +24,23 @@ type ExprLiteral struct {
 }
 
 type ExprUnary struct {
-	Operator token.Token
+	Operator Token
 	Right    Expr
 }
 
 type ExprVar struct {
-	Name token.Token
+	Name Token
 }
 
 type ExprLogical struct {
 	Left     Expr
-	Operator token.Token
+	Operator Token
 	Right    Expr
+}
+type ExprCall struct {
+	Callee    Expr
+	Paren     Token
+	Arguments []*Expr
 }
 
 func (e *ExprAssign) Accept(v ExprVisitor) interface{} { return v.VisitAssignExpr(e) }
@@ -55,3 +56,5 @@ func (e *ExprUnary) Accept(v ExprVisitor) interface{} { return v.VisitUnaryExpr(
 func (e *ExprVar) Accept(v ExprVisitor) interface{} { return v.VisitVarExpr(e) }
 
 func (e *ExprLogical) Accept(v ExprVisitor) interface{} { return v.VisitLogicalExpr(e) }
+
+func (e *ExprCall) Accept(v ExprVisitor) interface{} { return v.VisitCallExpr(e) }

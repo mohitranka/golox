@@ -1,4 +1,4 @@
-package expression
+package lox
 
 type ExprVisitor interface {
 	VisitAssignExpr(ea *ExprAssign) interface{}
@@ -8,4 +8,5 @@ type ExprVisitor interface {
 	VisitUnaryExpr(eu *ExprUnary) interface{}
 	VisitVarExpr(ev *ExprVar) interface{}
 	VisitLogicalExpr(eb *ExprLogical) interface{}
+	VisitCallExpr(ec *ExprCall) interface{}
 }

@@ -1,4 +1,4 @@
-package main
+package lox
 
 import (
 	"fmt"
@@ -7,30 +7,25 @@ import (
 
 	//Third party
 	"github.com/chzyer/readline"
-
-	//Local packages
-	"github.com/mohitranka/golox/interpreter"
-	"github.com/mohitranka/golox/parser"
-	"github.com/mohitranka/golox/scanner"
 )
 
 type Lox struct {
 	HadError        bool
 	HadRuntimeError bool
-	Interpreter     *interpreter.Interpreter
+	Interpreter     *Interpreter
 }
 
 func NewLox() *Lox {
 	l := new(Lox)
 	l.HadError = false
 	l.HadRuntimeError = false
-	l.Interpreter = interpreter.NewInterpreter()
+	l.Interpreter = NewInterpreter()
 	return l
 }
 
 func main() {
 	if len(os.Args) > 2 {
-		fmt.Println("Usage: golox [script]")
+		fmt.Println("Usage: go[script]")
 		os.Exit(64)
 	} else {
 		l := NewLox()
@@ -81,9 +76,9 @@ func (l Lox) runPrompt() {
 }
 
 func (l Lox) run(source string) {
-	s := scanner.NewScanner(source)
+	s := NewScanner(source)
 	tokens := s.ScanTokens()
-	p := parser.NewParser(tokens)
+	p := NewParser(tokens)
 	stmts := p.Parse()
 	if l.HadError {
 		return

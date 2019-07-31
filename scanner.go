@@ -1,18 +1,16 @@
-package scanner
+package lox
 
 import (
 	"fmt"
-	"github.com/mohitranka/golox/err"
-	"github.com/mohitranka/golox/token"
 	"strconv"
 	"unicode"
 )
 
 var start int
-var current int
+var currentScannerPointer int
 var line int
-var tokens []*token.Token
-var keywords map[string]token.TokenType
+var tokens []*Token
+var keywords map[string]TokenType
 
 type Scanner struct {
 	source string
@@ -22,94 +20,94 @@ func NewScanner(source string) *Scanner {
 	s := new(Scanner)
 	s.source = source
 
-	tokens = make([]*token.Token, 0)
+	tokens = make([]*Token, 0)
 	start = 0
-	current = 0
+	currentScannerPointer = 0
 	line = 1
 
-	keywords = map[string]token.TokenType{
-		"and":    token.AND,
-		"class":  token.CLASS,
-		"else":   token.ELSE,
-		"false":  token.FALSE,
-		"for":    token.FOR,
-		"fun":    token.FUN,
-		"if":     token.IF,
-		"nil":    token.NIL,
-		"or":     token.OR,
-		"print":  token.PRINT,
-		"return": token.RETURN,
-		"super":  token.SUPER,
-		"this":   token.THIS,
-		"true":   token.TRUE,
-		"var":    token.VAR,
-		"while":  token.WHILE,
+	keywords = map[string]TokenType{
+		"and":    AND,
+		"class":  CLASS,
+		"else":   ELSE,
+		"false":  FALSE,
+		"for":    FOR,
+		"fun":    FUN,
+		"if":     IF,
+		"nil":    NIL,
+		"or":     OR,
+		"print":  PRINT,
+		"return": RETURN,
+		"super":  SUPER,
+		"this":   THIS,
+		"true":   TRUE,
+		"var":    VAR,
+		"while":  WHILE,
 	}
 	return s
 }
 
-func (s Scanner) ScanTokens() []*token.Token {
+func (s Scanner) ScanTokens() []*Token {
 	for {
 		if s.isAtEnd() {
 			break
 		}
-		start = current
+		start = currentScannerPointer
 		s.scanToken()
 	}
 
-	tokens = append(tokens, token.NewToken(token.EOF, "", nil, line))
+	tokens = append(tokens, NewToken(EOF, "", nil, line))
 	return tokens
 }
 
 func (s Scanner) isAtEnd() bool {
-	return current >= len(s.source)
+	return currentScannerPointer >= len(s.source)
 }
 
 func (s Scanner) scanToken() {
 	switch c := s.advance(); c {
 	case '(':
-		s.addToken(token.LEFT_PAREN)
+		s.addToken(LEFT_PAREN)
 	case ')':
-		s.addToken(token.RIGHT_PAREN)
+		s.addToken(RIGHT_PAREN)
 	case '{':
-		s.addToken(token.LEFT_BRACE)
+		s.addToken(LEFT_BRACE)
 	case '}':
-		s.addToken(token.RIGHT_BRACE)
+		s.addToken(RIGHT_BRACE)
 	case ',':
-		s.addToken(token.COMMA)
+		s.addToken(COMMA)
 	case '.':
-		s.addToken(token.DOT)
+		s.addToken(DOT)
 	case '-':
-		s.addToken(token.MINUS)
+		s.addToken(MINUS)
 	case '+':
-		s.addToken(token.PLUS)
+		s.addToken(PLUS)
 	case ';':
-		s.addToken(token.SEMICOLON)
+		s.addToken(SEMICOLON)
 	case '*':
-		s.addToken(token.STAR)
+		s.addToken(STAR)
 	case '!':
 		if s.match('=') {
-			s.addToken(token.BANG_EQUAL)
+			s.addToken(BANG_EQUAL)
 		} else {
-			s.addToken(token.BANG)
+			s.addToken(BANG)
 		}
 	case '=':
 		if s.match('=') {
-			s.addToken(token.EQUAL_EQUAL)
+			s.addToken(EQUAL_EQUAL)
 		} else {
-			s.addToken(token.EQUAL)
+			s.addToken(EQUAL)
 		}
 	case '<':
 		if s.match('=') {
-			s.addToken(token.LESS_EQUAL)
+			s.addToken(LESS_EQUAL)
 		} else {
-			s.addToken(token.LESS)
+			s.addToken(LESS)
 		}
 	case '>':
 		if s.match('=') {
-			s.addToken(token.GREATER_EQUAL)
+			s.addToken(GREATER_EQUAL)
 		} else {
-			s.addToken(token.GREATER)
+			s.addToken(GREATER)
 		}
 	case '/':
 		if s.match('/') {
@@ -120,7 +118,7 @@ func (s Scanner) scanToken() {
 				s.advance()
 			}
 		} else {
-			s.addToken(token.SLASH)
+			s.addToken(SLASH)
 		}
 	case ' ', '\r', '\t':
 		break
@@ -134,7 +132,7 @@ func (s Scanner) scanToken() {
 		} else if s.isAlpha(c) {
 			s.identifierTokenizer()
 		} else {
-			fmt.Println(&err.RuntimeError{line, "Unexpected character."})
+			fmt.Println(&RuntimeError{line, "Unexpected character."})
 			return
 		}
 	}
@@ -156,9 +154,9 @@ func (s Scanner) identifierTokenizer() {
 		}
 		s.advance()
 	}
-	token_type, ok := keywords[s.source[start:current]]
+	token_type, ok := keywords[s.source[start:currentScannerPointer]]
 	if !ok {
-		token_type = token.IDENTIFIER
+		token_type = IDENTIFIER
 	}
 	s.addToken(token_type)
 }
@@ -185,20 +183,20 @@ func (s Scanner) numberTokenizer() error {
 		}
 	}
 
-	value, e := strconv.ParseFloat(s.source[start:current], 64)
+	value, e := strconv.ParseFloat(s.source[start:currentScannerPointer], 64)
 	if e != nil {
-		return &err.RuntimeError{line, e.Error()}
+		return &RuntimeError{line, e.Error()}
 	}
-	s.addTokenWithLiteral(token.NUMBER, value)
+	s.addTokenWithLiteral(NUMBER, value)
 	return nil
 }
 
 func (s Scanner) peekNext() byte {
-	if current+1 >= len(s.source) {
+	if currentScannerPointer+1 >= len(s.source) {
 		return 0
 	}
 
-	return s.source[current+1]
+	return s.source[currentScannerPointer+1]
 }
 
 func (s Scanner) stringTokenizer() error {
@@ -213,12 +211,12 @@ func (s Scanner) stringTokenizer() error {
 	}
 
 	if s.isAtEnd() {
-		return &err.RuntimeError{line, "Unterminated String"}
+		return &RuntimeError{line, "Unterminated String"}
 	}
 
 	s.advance()
-	text := s.source[start+1 : current-1]
-	s.addTokenWithLiteral(token.STRING, text)
+	text := s.source[start+1 : currentScannerPointer-1]
+	s.addTokenWithLiteral(STRING, text)
 	return nil
 }
 
@@ -226,7 +224,7 @@ func (s Scanner) peek() byte {
 	if s.isAtEnd() {
 		return 0
 	}
-	return s.source[current]
+	return s.source[currentScannerPointer]
 }
 
 func (s Scanner) match(expected byte) bool {
@@ -234,23 +232,23 @@ func (s Scanner) match(expected byte) bool {
 		return false
 	}
 
-	if s.source[current] != expected {
+	if s.source[currentScannerPointer] != expected {
 		return false
 	}
-	current += 1
+	currentScannerPointer += 1
 	return true
 }
 
 func (s Scanner) advance() byte {
-	current += 1
-	return s.source[current-1]
+	currentScannerPointer += 1
+	return s.source[currentScannerPointer-1]
 }
 
-func (s Scanner) addToken(token_type token.TokenType) {
+func (s Scanner) addToken(token_type TokenType) {
 	s.addTokenWithLiteral(token_type, nil)
 }
 
-func (s Scanner) addTokenWithLiteral(token_type token.TokenType, literal interface{}) {
-	text := s.source[start:current]
-	tokens = append(tokens, token.NewToken(token_type, text, literal, line))
+func (s Scanner) addTokenWithLiteral(token_type TokenType, literal interface{}) {
+	text := s.source[start:currentScannerPointer]
+	tokens = append(tokens, NewToken(token_type, text, literal, line))
 }

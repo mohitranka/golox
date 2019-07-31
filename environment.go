@@ -1,8 +1,7 @@
-package environment
+package lox
 
 import (
 	"fmt"
-	"github.com/mohitranka/golox/err"
 )
 
 type Environment struct {
@@ -28,7 +27,7 @@ func (e Environment) Get(name string) interface{} {
 	if e.Enclosing != nil {
 		return e.Enclosing.Get(name)
 	}
-	fmt.Println(&err.VarError{Name: name, Msg: "Undefined variable"})
+	fmt.Println(&VarError{Name: name, Msg: "Undefined variable"})
 	return nil
 }
 
@@ -42,5 +41,5 @@ func (e Environment) Assign(name string, value interface{}) {
 		return
 	}
 
-	fmt.Println(&err.VarError{Name: name, Msg: "Undefined variable"})
+	fmt.Println(&VarError{Name: name, Msg: "Undefined variable"})
 }

@@ -1,8 +1,7 @@
-package err
+package lox
 
 import (
 	"fmt"
-	"github.com/mohitranka/golox/token"
 )
 
 func report(line int, where string, message string) string {
@@ -15,7 +14,7 @@ type RuntimeError struct {
 }
 
 type ParseError struct {
-	Token token.Token
+	Token Token
 	Msg   string
 }
 
@@ -29,7 +28,7 @@ func (re *RuntimeError) Error() string {
 }
 
 func (pe *ParseError) Error() string {
-	if pe.Token.Type == token.EOF {
+	if pe.Token.Type == EOF {
 		return report(pe.Token.Line, " at end", pe.Msg)
 	} else {
 		return report(pe.Token.Line, fmt.Sprintf(" at '%s'", pe.Token.Lexeme), pe.Msg)

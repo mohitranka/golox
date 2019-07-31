@@ -1,39 +1,35 @@
-package interpreter
+package lox
 
 import (
 	"fmt"
-	"github.com/mohitranka/golox/environment"
-	"github.com/mohitranka/golox/expression"
-	"github.com/mohitranka/golox/statement"
-	"github.com/mohitranka/golox/token"
 	"reflect"
 )
 
 type Interpreter struct {
-	Env *environment.Environment
+	Env *Environment
 }
 
 func NewInterpreter() *Interpreter {
 	ni := new(Interpreter)
-	ni.Env = environment.NewEnvironment(nil)
+	ni.Env = NewEnvironment(nil)
 	return ni
 }
 
-func (i Interpreter) VisitLiteralExpr(expr *expression.ExprLiteral) interface{} {
+func (i Interpreter) VisitLiteralExpr(expr *ExprLiteral) interface{} {
 	return expr.Value
 }
 
-func (i Interpreter) VisitGroupingExpr(expr *expression.ExprGrouping) interface{} {
+func (i Interpreter) VisitGroupingExpr(expr *ExprGrouping) interface{} {
 	return i.evaluate(expr.Expr)
 }
 
-func (i Interpreter) VisitVarExpr(expr *expression.ExprVar) interface{} {
+func (i Interpreter) VisitVarExpr(expr *ExprVar) interface{} {
 	return i.Env.Get(expr.Name.Lexeme)
 }
 
-func (i Interpreter) VisitLogicalExpr(expr *expression.ExprLogical) interface{} {
+func (i Interpreter) VisitLogicalExpr(expr *ExprLogical) interface{} {
 	left := i.evaluate(expr.Left)
-	if expr.Operator.Type == token.OR {
+	if expr.Operator.Type == OR {
 		if i.isTruthy(left) {
 			return left
 		}
@@ -45,32 +41,32 @@ func (i Interpreter) VisitLogicalExpr(expr *expression.ExprLogical) interface{} 
 	return i.evaluate(expr.Right)
 }
 
-func (i Interpreter) Interpret(statements []statement.Stmt) {
+func (i Interpreter) Interpret(statements []Stmt) {
 	for _, statement := range statements {
 		i.execute(statement)
 	}
 }
 
-func (i Interpreter) execute(stmt statement.Stmt) interface{} {
+func (i Interpreter) execute(stmt Stmt) interface{} {
 	return stmt.Accept(i)
 }
 
-func (i Interpreter) evaluate(expr expression.Expr) interface{} {
+func (i Interpreter) evaluate(expr Expr) interface{} {
 	return expr.Accept(i)
 }
 
-func (i Interpreter) VisitAssignExpr(expr *expression.ExprAssign) interface{} {
+func (i Interpreter) VisitAssignExpr(expr *ExprAssign) interface{} {
 	value := i.evaluate(expr.Value)
 	i.Env.Assign(expr.Name.Lexeme, value)
 	return value
 }
 
-func (i Interpreter) VisitUnaryExpr(expr *expression.ExprUnary) interface{} {
+func (i Interpreter) VisitUnaryExpr(expr *ExprUnary) interface{} {
 	right := i.evaluate(expr.Right)
 	switch expr.Operator.Type {
-	case token.BANG:
+	case BANG:
 		return !i.isTruthy(right.(float64))
-	case token.MINUS:
+	case MINUS:
 		return -right.(float64)
 	}
 	return nil
@@ -92,26 +88,37 @@ func (i Interpreter) isTruthy(obj interface{}) bool {
 	}
 }
 
-func (i Interpreter) VisitBinaryExpr(expr *expression.ExprBinary) interface{} {
+func (i Interpreter) VisitCallExpr(expr *ExprCall) interface{} {
+	callee := i.evaluate(expr.Callee)
+	arguments := make([]interface{}, 0)
+	for _, arg := range expr.Arguments {
+		arguments = append(arguments, i.evaluate(*arg))
+	}
+
+	f := callee.(Callable)
+	return f.Call(&i, arguments)
+}
+
+func (i Interpreter) VisitBinaryExpr(expr *ExprBinary) interface{} {
 	left := i.evaluate(expr.Left)
 	right := i.evaluate(expr.Right)
 
 	switch expr.Operator.Type {
-	case token.GREATER:
+	case GREATER:
 		return left.(float64) > right.(float64)
-	case token.GREATER_EQUAL:
+	case GREATER_EQUAL:
 		return left.(float64) >= right.(float64)
-	case token.LESS:
+	case LESS:
 		return left.(float64) < right.(float64)
-	case token.LESS_EQUAL:
+	case LESS_EQUAL:
 		return left.(float64) <= right.(float64)
-	case token.BANG_EQUAL:
+	case BANG_EQUAL:
 		return !(left.(float64) == right.(float64))
-	case token.EQUAL_EQUAL:
+	case EQUAL_EQUAL:
 		return left.(float64) == right.(float64)
-	case token.MINUS:
+	case MINUS:
 		return left.(float64) - right.(float64)
-	case token.PLUS:
+	case PLUS:
 		typeLeft := reflect.TypeOf(left).String()
 		typeRight := reflect.TypeOf(right).String()
 		if (typeLeft == "float64" || typeLeft == "float32" || typeLeft == "int") && (typeRight == "float64" || typeRight == "float32" || typeRight == "int") {
@@ -119,25 +126,25 @@ func (i Interpreter) VisitBinaryExpr(expr *expression.ExprBinary) interface{} {
 		} else if typeLeft == "string" && typeRight == "string" {
 			return left.(string) + right.(string)
 		}
-	case token.SLASH:
+	case SLASH:
 		return left.(float64) / right.(float64)
-	case token.STAR:
+	case STAR:
 		return left.(float64) * right.(float64)
 	}
 	return nil
 }
 
-func (i Interpreter) VisitExpressionStmt(stmt *statement.ExpressionStmt) interface{} {
+func (i Interpreter) VisitExpressionStmt(stmt *ExpressionStmt) interface{} {
 	return i.evaluate(stmt.Expression)
 }
 
-func (i Interpreter) VisitPrintStmt(stmt *statement.PrintStmt) interface{} {
+func (i Interpreter) VisitPrintStmt(stmt *PrintStmt) interface{} {
 	value := i.evaluate(stmt.Expression)
 	fmt.Printf("%v\n", value)
 	return nil
 }
 
-func (i Interpreter) VisitVarStmt(stmt *statement.VarStmt) interface{} {
+func (i Interpreter) VisitVarStmt(stmt *VarStmt) interface{} {
 	var value interface{}
 	if stmt.Initializer != nil {
 		value = i.evaluate(stmt.Initializer)
@@ -146,12 +153,12 @@ func (i Interpreter) VisitVarStmt(stmt *statement.VarStmt) interface{} {
 	return nil
 }
 
-func (i Interpreter) VisitBlockStmt(stmt *statement.BlockStmt) interface{} {
-	i.executeBlock(stmt.Statements, environment.NewEnvironment(i.Env))
+func (i Interpreter) VisitBlockStmt(stmt *BlockStmt) interface{} {
+	i.executeBlock(stmt.Statements, NewEnvironment(i.Env))
 	return nil
 }
 
-func (i Interpreter) executeBlock(statements []statement.Stmt, env *environment.Environment) {
+func (i Interpreter) executeBlock(statements []Stmt, env *Environment) {
 	previous := i.Env
 	i.Env = env
 	for _, statement := range statements {
@@ -160,7 +167,7 @@ func (i Interpreter) executeBlock(statements []statement.Stmt, env *environment.
 	i.Env = previous
 }
 
-func (i Interpreter) VisitIfStmt(stmt *statement.IfStmt) interface{} {
+func (i Interpreter) VisitIfStmt(stmt *IfStmt) interface{} {
 	if i.isTruthy(i.evaluate(stmt.Condition)) {
 		i.execute(stmt.ThenBranch)
 	} else if stmt.ElseBranch != nil {
@@ -169,7 +176,7 @@ func (i Interpreter) VisitIfStmt(stmt *statement.IfStmt) interface{} {
 	return nil
 }
 
-func (i Interpreter) VisitWhileStmt(stmt *statement.WhileStmt) interface{} {
+func (i Interpreter) VisitWhileStmt(stmt *WhileStmt) interface{} {
 	for {
 		if !i.isTruthy(i.evaluate(stmt.Condition)) {
 			break

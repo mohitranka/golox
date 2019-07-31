@@ -1,4 +1,4 @@
-package statement
+package lox
 
 type StmtVisitor interface {
 	VisitExpressionStmt(stmt *ExpressionStmt) interface{}
