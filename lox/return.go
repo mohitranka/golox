@@ -1,9 +1,9 @@
 package lox
 
 type ReturnValue struct {
-	Value interface{}
+	ExprLiteral
 }
 
 func (rv ReturnValue) Error() string {
-	return "No one cares!"
+	return rv.ExprLiteral.Value.(string)
 }
