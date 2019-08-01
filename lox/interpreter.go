@@ -208,5 +208,5 @@ func (i Interpreter) VisitReturnStmt(stmt *ReturnStmt) interface{} {
 	if stmt.Value != nil {
 		value = i.evaluate(stmt.Value)
 	}
-	return &Return{Value: value}
+	return &ReturnValue{Value: value}
 }
