@@ -1,7 +1,9 @@
 package lox
 
+// TokenType ...
 type TokenType int
 
+// const ...
 const (
 
 	// 1 character token

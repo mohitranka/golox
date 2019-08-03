@@ -4,11 +4,13 @@ import (
 	"fmt"
 )
 
+// Environment ...
 type Environment struct {
 	Enclosing *Environment
 	Values    map[string]interface{}
 }
 
+// NewEnvironment ...
 func NewEnvironment(enclosing *Environment) *Environment {
 	ne := new(Environment)
 	ne.Values = make(map[string]interface{})
@@ -16,10 +18,12 @@ func NewEnvironment(enclosing *Environment) *Environment {
 	return ne
 }
 
+// Define ...
 func (e Environment) Define(name string, value interface{}) {
 	e.Values[name] = value
 }
 
+// Get ...
 func (e Environment) Get(name string) interface{} {
 	if value, ok := e.Values[name]; ok {
 		return value
@@ -31,6 +35,7 @@ func (e Environment) Get(name string) interface{} {
 	return nil
 }
 
+// Assign ...
 func (e Environment) Assign(name string, value interface{}) {
 	if _, ok := e.Values[name]; ok {
 		e.Values[name] = value

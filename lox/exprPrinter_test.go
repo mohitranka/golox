@@ -4,6 +4,7 @@ import (
 	"testing"
 )
 
+// TestExpressionPrinter ...
 func TestExpressionPrinter(t *testing.T) {
 	expr := ExprBinary{
 		Left: &ExprUnary{

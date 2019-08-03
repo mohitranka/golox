@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// PrintExpr ...
 func PrintExpr(e Expr) string {
 	switch t := e.(type) {
 	case *ExprBinary:
@@ -12,9 +13,8 @@ func PrintExpr(e Expr) string {
 	case *ExprLiteral:
 		if t.Value == nil {
 			return "nil"
-		} else {
-			return fmt.Sprint(t.Value)
 		}
+		return fmt.Sprint(t.Value)
 	case *ExprGrouping:
 		return parenthesize("group", t.Expr)
 	case *ExprUnary:

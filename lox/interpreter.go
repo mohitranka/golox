@@ -5,11 +5,13 @@ import (
 	"reflect"
 )
 
+// Interpreter ...
 type Interpreter struct {
 	Env       *Environment
 	GlobalEnv *Environment
 }
 
+// NewInterpreter ...
 func NewInterpreter() *Interpreter {
 	ni := new(Interpreter)
 	ni.Env = NewEnvironment(nil)
@@ -18,18 +20,22 @@ func NewInterpreter() *Interpreter {
 	return ni
 }
 
+// VisitLiteralExpr ...
 func (i Interpreter) VisitLiteralExpr(expr *ExprLiteral) interface{} {
 	return expr.Value
 }
 
+// VisitGroupingExpr ...
 func (i Interpreter) VisitGroupingExpr(expr *ExprGrouping) interface{} {
 	return i.evaluate(expr.Expr)
 }
 
+// VisitVarExpr ...
 func (i Interpreter) VisitVarExpr(expr *ExprVar) interface{} {
 	return i.Env.Get(expr.Name.Lexeme)
 }
 
+// VisitLogicalExpr ...
 func (i Interpreter) VisitLogicalExpr(expr *ExprLogical) interface{} {
 	left := i.evaluate(expr.Left)
 	if expr.Operator.Type == OR {
@@ -44,6 +50,7 @@ func (i Interpreter) VisitLogicalExpr(expr *ExprLogical) interface{} {
 	return i.evaluate(expr.Right)
 }
 
+// Interpret ...
 func (i Interpreter) Interpret(statements []Stmt) {
 	for _, statement := range statements {
 		i.execute(statement)
@@ -58,12 +65,14 @@ func (i Interpreter) evaluate(expr Expr) interface{} {
 	return expr.Accept(i)
 }
 
+// VisitAssignExpr ...
 func (i Interpreter) VisitAssignExpr(expr *ExprAssign) interface{} {
 	value := i.evaluate(expr.Value)
 	i.Env.Assign(expr.Name.Lexeme, value)
 	return value
 }
 
+// VisitUnaryExpr ...
 func (i Interpreter) VisitUnaryExpr(expr *ExprUnary) interface{} {
 	right := i.evaluate(expr.Right)
 	switch expr.Operator.Type {
@@ -91,6 +100,7 @@ func (i Interpreter) isTruthy(obj interface{}) bool {
 	}
 }
 
+// VisitCallExpr ...
 func (i Interpreter) VisitCallExpr(expr *ExprCall) interface{} {
 	callee := i.evaluate(expr.Callee)
 	arguments := make([]interface{}, 0)
@@ -104,12 +114,12 @@ func (i Interpreter) VisitCallExpr(expr *ExprCall) interface{} {
 			return nil
 		}
 		return f.Call(&i, arguments)
-	} else {
-		fmt.Printf("Can only call functions and classes, not %v.\n", reflect.TypeOf(callee))
-		return nil
 	}
+	fmt.Printf("Can only call functions and classes, not %v.\n", reflect.TypeOf(callee))
+	return nil
 }
 
+// VisitBinaryExpr ...
 func (i Interpreter) VisitBinaryExpr(expr *ExprBinary) interface{} {
 	left := i.evaluate(expr.Left)
 	right := i.evaluate(expr.Right)
@@ -145,16 +155,19 @@ func (i Interpreter) VisitBinaryExpr(expr *ExprBinary) interface{} {
 	return nil
 }
 
+// VisitExpressionStmt ...
 func (i Interpreter) VisitExpressionStmt(stmt *ExpressionStmt) interface{} {
 	return i.evaluate(stmt.Expression)
 }
 
+// VisitPrintStmt ...
 func (i Interpreter) VisitPrintStmt(stmt *PrintStmt) interface{} {
 	value := i.evaluate(stmt.Expression)
 	fmt.Printf("%v\n", value)
 	return nil
 }
 
+// VisitVarStmt ...
 func (i Interpreter) VisitVarStmt(stmt *VarStmt) interface{} {
 	var value interface{}
 	if stmt.Initializer != nil {
@@ -164,11 +177,13 @@ func (i Interpreter) VisitVarStmt(stmt *VarStmt) interface{} {
 	return nil
 }
 
+// VisitBlockStmt ...
 func (i Interpreter) VisitBlockStmt(stmt *BlockStmt) interface{} {
 	i.ExecuteBlock(stmt.Statements, NewEnvironment(i.Env))
 	return nil
 }
 
+// ExecuteBlock ...
 func (i Interpreter) ExecuteBlock(statements []Stmt, env *Environment) {
 	previous := i.Env
 	i.Env = env
@@ -178,6 +193,7 @@ func (i Interpreter) ExecuteBlock(statements []Stmt, env *Environment) {
 	i.Env = previous
 }
 
+// VisitIfStmt ...
 func (i Interpreter) VisitIfStmt(stmt *IfStmt) interface{} {
 	if i.isTruthy(i.evaluate(stmt.Condition)) {
 		i.execute(stmt.ThenBranch)
@@ -187,6 +203,7 @@ func (i Interpreter) VisitIfStmt(stmt *IfStmt) interface{} {
 	return nil
 }
 
+// VisitWhileStmt ...
 func (i Interpreter) VisitWhileStmt(stmt *WhileStmt) interface{} {
 	for {
 		if !i.isTruthy(i.evaluate(stmt.Condition)) {
@@ -197,14 +214,16 @@ func (i Interpreter) VisitWhileStmt(stmt *WhileStmt) interface{} {
 	return nil
 }
 
+// VisitFunctionStmt ...
 func (i Interpreter) VisitFunctionStmt(stmt *FunctionStmt) interface{} {
 	f := NewFunction(*stmt)
 	i.Env.Define(stmt.Name.Lexeme, f)
 	return nil
 }
 
+// VisitReturnStmt ...
 func (i Interpreter) VisitReturnStmt(stmt *ReturnStmt) interface{} {
-	var value interface{} = nil
+	var value interface{}
 	if stmt.Value != nil {
 		value = i.evaluate(stmt.Value)
 	}

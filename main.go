@@ -12,12 +12,14 @@ import (
 	"github.com/mohitranka/golox/lox"
 )
 
+// Lox struct for the lox class
 type Lox struct {
 	HadError        bool
 	HadRuntimeError bool
 	Interpreter     *lox.Interpreter
 }
 
+// NewLox Constructor for lox
 func NewLox() *Lox {
 	l := new(Lox)
 	l.HadError = false

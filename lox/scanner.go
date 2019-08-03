@@ -12,10 +12,12 @@ var line int
 var tokens []*Token
 var keywords map[string]TokenType
 
+// Scanner ...
 type Scanner struct {
 	source string
 }
 
+// NewScanner ...
 func NewScanner(source string) *Scanner {
 	s := new(Scanner)
 	s.source = source
@@ -46,6 +48,7 @@ func NewScanner(source string) *Scanner {
 	return s
 }
 
+// ScanTokens ...
 func (s Scanner) ScanTokens() []*Token {
 	for {
 		if s.isAtEnd() {
@@ -123,7 +126,7 @@ func (s Scanner) scanToken() {
 	case ' ', '\r', '\t':
 		break
 	case '\n':
-		line += 1
+		line++
 	case '"':
 		s.stringTokenizer()
 	default:
@@ -154,11 +157,11 @@ func (s Scanner) identifierTokenizer() {
 		}
 		s.advance()
 	}
-	token_type, ok := keywords[s.source[start:currentScannerPointer]]
+	tokenType, ok := keywords[s.source[start:currentScannerPointer]]
 	if !ok {
-		token_type = IDENTIFIER
+		tokenType = IDENTIFIER
 	}
-	s.addToken(token_type)
+	s.addToken(tokenType)
 }
 
 func (s Scanner) isDigit(c byte) bool {
@@ -205,7 +208,7 @@ func (s Scanner) stringTokenizer() error {
 			break
 		}
 		if s.peek() == '\n' {
-			line += 1
+			line++
 		}
 		s.advance()
 	}
@@ -235,20 +238,20 @@ func (s Scanner) match(expected byte) bool {
 	if s.source[currentScannerPointer] != expected {
 		return false
 	}
-	currentScannerPointer += 1
+	currentScannerPointer++
 	return true
 }
 
 func (s Scanner) advance() byte {
-	currentScannerPointer += 1
+	currentScannerPointer++
 	return s.source[currentScannerPointer-1]
 }
 
-func (s Scanner) addToken(token_type TokenType) {
-	s.addTokenWithLiteral(token_type, nil)
+func (s Scanner) addToken(tokenType TokenType) {
+	s.addTokenWithLiteral(tokenType, nil)
 }
 
-func (s Scanner) addTokenWithLiteral(token_type TokenType, literal interface{}) {
+func (s Scanner) addTokenWithLiteral(tokenType TokenType, literal interface{}) {
 	text := s.source[start:currentScannerPointer]
-	tokens = append(tokens, NewToken(token_type, text, literal, line))
+	tokens = append(tokens, NewToken(tokenType, text, literal, line))
 }

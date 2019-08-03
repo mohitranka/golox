@@ -6,10 +6,12 @@ import (
 
 var currentParserPointer int
 
+// Parser ...
 type Parser struct {
 	tokens []*Token
 }
 
+// NewParser ...
 func NewParser(tokens []*Token) *Parser {
 	np := new(Parser)
 	np.tokens = tokens
@@ -18,8 +20,8 @@ func NewParser(tokens []*Token) *Parser {
 }
 
 func (p Parser) match(types ...TokenType) bool {
-	for _, token_type := range types {
-		if p.check(token_type) {
+	for _, tokenType := range types {
+		if p.check(tokenType) {
 			p.advance()
 			return true
 		}
@@ -27,11 +29,11 @@ func (p Parser) match(types ...TokenType) bool {
 	return false
 }
 
-func (p Parser) check(token_type TokenType) bool {
+func (p Parser) check(tokenType TokenType) bool {
 	if p.isAtEnd() {
 		return false
 	}
-	return p.peek().Type == token_type
+	return p.peek().Type == tokenType
 }
 
 func (p Parser) advance() *Token {
@@ -53,6 +55,7 @@ func (p Parser) previous() *Token {
 	return p.tokens[currentParserPointer-1]
 }
 
+// Parse ...
 func (p Parser) Parse() []Stmt {
 	statements := make([]Stmt, 0)
 	for {
@@ -122,11 +125,10 @@ func (p Parser) assignment() (Expr, error) {
 		if ok {
 			name := token.Name
 			return &ExprAssign{Name: name, Value: value}, nil
-		} else {
-			e := &VarError{Name: equals.Lexeme, Msg: "Invalid assignment target"}
-			fmt.Println(e)
-			return nil, e
 		}
+		e = &VarError{Name: equals.Lexeme, Msg: "Invalid assignment target"}
+		fmt.Println(e)
+		return nil, e
 	}
 	return expr, nil
 }
@@ -196,7 +198,7 @@ func (p Parser) statement() Stmt {
 
 func (p Parser) returnStatement() Stmt {
 	keyword := p.previous()
-	var value Expr = nil
+	var value Expr
 	var e error
 	if !p.check(SEMICOLON) {
 		value, e = p.expression()
@@ -250,13 +252,13 @@ func (p Parser) forStatement() Stmt {
 		initializer = p.expressionStatement()
 	}
 
-	var condition Expr = nil
+	var condition Expr
 	if !p.check(SEMICOLON) {
 		condition, _ = p.expression()
 	}
 	p.consume(SEMICOLON, "Expect ';' after loop condition")
 
-	var increment Expr = nil
+	var increment Expr
 
 	if !p.check(RIGHT_PAREN) {
 		increment, _ = p.expression()
@@ -406,12 +408,12 @@ func (p Parser) finishCall(callee Expr) Expr {
 	arguments := make([]*Expr, 0)
 	if !p.check(RIGHT_PAREN) {
 		for {
-			this_expr, e := p.expression()
+			thisExpr, e := p.expression()
 			if e != nil {
 				fmt.Println(e)
 				return nil
 			}
-			arguments = append(arguments, &this_expr)
+			arguments = append(arguments, &thisExpr)
 			if !p.match(COMMA) {
 				break
 			}
@@ -448,18 +450,18 @@ func (p Parser) primary() (Expr, error) {
 		p.consume(RIGHT_PAREN, "Expect ')' after expression.")
 		return &ExprGrouping{expr}, nil
 	}
-	return nil, p.parse_err(p.peek(), "Expect expression.")
+	return nil, p.parseErr(p.peek(), "Expect expression.")
 }
 
-func (p Parser) consume(token_type TokenType, message string) *Token {
-	if !p.check(token_type) {
-		fmt.Println(p.parse_err(p.peek(), message))
+func (p Parser) consume(tokenType TokenType, message string) *Token {
+	if !p.check(tokenType) {
+		fmt.Println(p.parseErr(p.peek(), message))
 		return nil
 	}
 	return p.advance()
 }
 
-func (p Parser) parse_err(t Token, message string) error {
+func (p Parser) parseErr(t Token, message string) error {
 	return &ParseError{Token: t, Msg: message}
 }
 

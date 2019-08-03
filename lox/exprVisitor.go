@@ -1,5 +1,6 @@
 package lox
 
+// ExprVisitor ...
 type ExprVisitor interface {
 	VisitAssignExpr(ea *ExprAssign) interface{}
 	VisitBinaryExpr(eb *ExprBinary) interface{}
