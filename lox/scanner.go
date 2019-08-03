@@ -28,22 +28,22 @@ func NewScanner(source string) *Scanner {
 	line = 1
 
 	keywords = map[string]TokenType{
-		"and":    AND,
-		"class":  CLASS,
-		"else":   ELSE,
-		"false":  FALSE,
-		"for":    FOR,
-		"fun":    FUN,
-		"if":     IF,
-		"nil":    NIL,
-		"or":     OR,
-		"print":  PRINT,
-		"return": RETURN,
-		"super":  SUPER,
-		"this":   THIS,
-		"true":   TRUE,
-		"var":    VAR,
-		"while":  WHILE,
+		"and":    TokenTypeAnd,
+		"class":  TokenTypeClass,
+		"else":   TokenTypeElse,
+		"false":  TokenTypeFalse,
+		"for":    TokenTypeFor,
+		"fun":    TokenTypeFun,
+		"if":     TokenTypeIf,
+		"nil":    TokenTypeNil,
+		"or":     TokenTypeOr,
+		"print":  TokenTypePrint,
+		"return": TokenTypeReturn,
+		"super":  TokenTypeSuper,
+		"this":   TokenTypeThis,
+		"true":   TokenTypeTrue,
+		"var":    TokenTypeVar,
+		"while":  TokenTypeWhile,
 	}
 	return s
 }
@@ -58,7 +58,7 @@ func (s Scanner) ScanTokens() []*Token {
 		s.scanToken()
 	}
 
-	tokens = append(tokens, NewToken(EOF, "", nil, line))
+	tokens = append(tokens, NewToken(TokenTypeEOF, "", nil, line))
 	return tokens
 }
 
@@ -69,48 +69,48 @@ func (s Scanner) isAtEnd() bool {
 func (s Scanner) scanToken() {
 	switch c := s.advance(); c {
 	case '(':
-		s.addToken(LEFT_PAREN)
+		s.addToken(TokenTypeLeftParen)
 	case ')':
-		s.addToken(RIGHT_PAREN)
+		s.addToken(TokenTypeRightParen)
 	case '{':
-		s.addToken(LEFT_BRACE)
+		s.addToken(TokenTypeLeftBrace)
 	case '}':
-		s.addToken(RIGHT_BRACE)
+		s.addToken(TokenTypeRightBrace)
 	case ',':
-		s.addToken(COMMA)
+		s.addToken(TokenTypeComma)
 	case '.':
-		s.addToken(DOT)
+		s.addToken(TokenTypeDot)
 	case '-':
-		s.addToken(MINUS)
+		s.addToken(TokenTypeMinus)
 	case '+':
-		s.addToken(PLUS)
+		s.addToken(TokenTypePlus)
 	case ';':
-		s.addToken(SEMICOLON)
+		s.addToken(TokenTypeSemiColon)
 	case '*':
-		s.addToken(STAR)
+		s.addToken(TokenTypeStar)
 	case '!':
 		if s.match('=') {
-			s.addToken(BANG_EQUAL)
+			s.addToken(TokenTypeBangEqual)
 		} else {
-			s.addToken(BANG)
+			s.addToken(TokenTypeBang)
 		}
 	case '=':
 		if s.match('=') {
-			s.addToken(EQUAL_EQUAL)
+			s.addToken(TokenTypeEqualEqual)
 		} else {
-			s.addToken(EQUAL)
+			s.addToken(TokenTypeEqual)
 		}
 	case '<':
 		if s.match('=') {
-			s.addToken(LESS_EQUAL)
+			s.addToken(TokenTypeLessEqual)
 		} else {
-			s.addToken(LESS)
+			s.addToken(TokenTypeLess)
 		}
 	case '>':
 		if s.match('=') {
-			s.addToken(GREATER_EQUAL)
+			s.addToken(TokenTypeGreaterEqual)
 		} else {
-			s.addToken(GREATER)
+			s.addToken(TokenTypeGreater)
 		}
 	case '/':
 		if s.match('/') {
@@ -121,7 +121,7 @@ func (s Scanner) scanToken() {
 				s.advance()
 			}
 		} else {
-			s.addToken(SLASH)
+			s.addToken(TokenTypeSlash)
 		}
 	case ' ', '\r', '\t':
 		break
@@ -159,7 +159,7 @@ func (s Scanner) identifierTokenizer() {
 	}
 	tokenType, ok := keywords[s.source[start:currentScannerPointer]]
 	if !ok {
-		tokenType = IDENTIFIER
+		tokenType = TokenTypeIdentifier
 	}
 	s.addToken(tokenType)
 }
@@ -190,7 +190,7 @@ func (s Scanner) numberTokenizer() error {
 	if e != nil {
 		return &RuntimeError{line, e.Error()}
 	}
-	s.addTokenWithLiteral(NUMBER, value)
+	s.addTokenWithLiteral(TokenTypeNumber, value)
 	return nil
 }
 
@@ -219,7 +219,7 @@ func (s Scanner) stringTokenizer() error {
 
 	s.advance()
 	text := s.source[start+1 : currentScannerPointer-1]
-	s.addTokenWithLiteral(STRING, text)
+	s.addTokenWithLiteral(TokenTypeString, text)
 	return nil
 }
 

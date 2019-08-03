@@ -8,52 +8,52 @@ const (
 
 	// 1 character token
 
-	LEFT_PAREN TokenType = iota + 1
-	RIGHT_PAREN
-	LEFT_BRACE
-	RIGHT_BRACE
-	COMMA
-	DOT
-	MINUS
-	PLUS
-	SEMICOLON
-	SLASH
-	STAR
+	TokenTypeLeftParen TokenType = iota + 1
+	TokenTypeRightParen
+	TokenTypeLeftBrace
+	TokenTypeRightBrace
+	TokenTypeComma
+	TokenTypeDot
+	TokenTypeMinus
+	TokenTypePlus
+	TokenTypeSemiColon
+	TokenTypeSlash
+	TokenTypeStar
 
 	//1 or 2 character token
 
-	BANG
-	BANG_EQUAL
-	EQUAL
-	EQUAL_EQUAL
-	GREATER
-	GREATER_EQUAL
-	LESS
-	LESS_EQUAL
+	TokenTypeBang
+	TokenTypeBangEqual
+	TokenTypeEqual
+	TokenTypeEqualEqual
+	TokenTypeGreater
+	TokenTypeGreaterEqual
+	TokenTypeLess
+	TokenTypeLessEqual
 
 	//Literals
 
-	IDENTIFIER
-	STRING
-	NUMBER
+	TokenTypeIdentifier
+	TokenTypeString
+	TokenTypeNumber
 
 	// KEYWORDS
 
-	AND
-	CLASS
-	ELSE
-	FALSE
-	FUN
-	FOR
-	IF
-	NIL
-	OR
-	PRINT
-	RETURN
-	SUPER
-	THIS
-	VAR
-	WHILE
-	TRUE
-	EOF
+	TokenTypeAnd
+	TokenTypeClass
+	TokenTypeElse
+	TokenTypeFalse
+	TokenTypeFun
+	TokenTypeFor
+	TokenTypeIf
+	TokenTypeNil
+	TokenTypeOr
+	TokenTypePrint
+	TokenTypeReturn
+	TokenTypeSuper
+	TokenTypeThis
+	TokenTypeVar
+	TokenTypeWhile
+	TokenTypeTrue
+	TokenTypeEOF
 )

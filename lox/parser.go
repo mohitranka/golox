@@ -44,7 +44,7 @@ func (p Parser) advance() *Token {
 }
 
 func (p Parser) isAtEnd() bool {
-	return p.peek().Type == EOF
+	return p.peek().Type == TokenTypeEOF
 }
 
 func (p Parser) peek() Token {
@@ -68,40 +68,40 @@ func (p Parser) Parse() []Stmt {
 }
 
 func (p Parser) declaration() Stmt {
-	if p.match(FUN) {
+	if p.match(TokenTypeFun) {
 		return p.function("function")
 	}
-	if p.match(VAR) {
+	if p.match(TokenTypeVar) {
 		return p.varDeclaration()
 	}
 	return p.statement()
 }
 
 func (p Parser) function(kind string) Stmt {
-	name := p.consume(IDENTIFIER, fmt.Sprintf("Expect %s name.", kind))
-	p.consume(LEFT_PAREN, fmt.Sprintf("Expect '(' after %s name.", kind))
+	name := p.consume(TokenTypeIdentifier, fmt.Sprintf("Expect %s name.", kind))
+	p.consume(TokenTypeLeftParen, fmt.Sprintf("Expect '(' after %s name.", kind))
 	params := make([]Token, 0)
-	if !p.check(RIGHT_PAREN) {
+	if !p.check(TokenTypeRightParen) {
 		for {
-			params = append(params, *p.consume(IDENTIFIER, "Expect ')' after parameters."))
-			if !p.match(COMMA) {
+			params = append(params, *p.consume(TokenTypeIdentifier, "Expect ')' after parameters."))
+			if !p.match(TokenTypeComma) {
 				break
 			}
 		}
 	}
-	p.consume(RIGHT_PAREN, "Expect ')' after parameters")
-	p.consume(LEFT_BRACE, fmt.Sprintf("Expect '{' before %s body.", kind))
+	p.consume(TokenTypeRightParen, "Expect ')' after parameters")
+	p.consume(TokenTypeLeftBrace, fmt.Sprintf("Expect '{' before %s body.", kind))
 	body := p.block()
 	return NewFunctionStmt(*name, params, body)
 }
 
 func (p Parser) varDeclaration() Stmt {
-	name := p.consume(IDENTIFIER, "Expect variable name")
+	name := p.consume(TokenTypeIdentifier, "Expect variable name")
 	var initializer Expr
-	if p.match(EQUAL) {
+	if p.match(TokenTypeEqual) {
 		initializer, _ = p.expression()
 	}
-	p.consume(SEMICOLON, "Expect ';' after variable declaration")
+	p.consume(TokenTypeSemiColon, "Expect ';' after variable declaration")
 	return NewVarStmt(*name, initializer)
 }
 
@@ -115,7 +115,7 @@ func (p Parser) assignment() (Expr, error) {
 		return nil, e
 	}
 
-	if p.match(EQUAL) {
+	if p.match(TokenTypeEqual) {
 		equals := p.previous()
 		value, e := p.assignment()
 		if e != nil {
@@ -140,7 +140,7 @@ func (p Parser) or() (Expr, error) {
 	}
 
 	for {
-		if !p.match(OR) {
+		if !p.match(TokenTypeOr) {
 			break
 		}
 
@@ -161,7 +161,7 @@ func (p Parser) and() (Expr, error) {
 	}
 
 	for {
-		if !p.match(AND) {
+		if !p.match(TokenTypeAnd) {
 			break
 		}
 		operator := p.previous()
@@ -175,22 +175,22 @@ func (p Parser) and() (Expr, error) {
 }
 
 func (p Parser) statement() Stmt {
-	if p.match(FOR) {
+	if p.match(TokenTypeFor) {
 		return p.forStatement()
 	}
-	if p.match(IF) {
+	if p.match(TokenTypeIf) {
 		return p.ifStatement()
 	}
-	if p.match(PRINT) {
+	if p.match(TokenTypePrint) {
 		return p.printStatement()
 	}
-	if p.match(RETURN) {
+	if p.match(TokenTypeReturn) {
 		return p.returnStatement()
 	}
-	if p.match(WHILE) {
+	if p.match(TokenTypeWhile) {
 		return p.whileStatement()
 	}
-	if p.match(LEFT_BRACE) {
+	if p.match(TokenTypeLeftBrace) {
 		return NewBlockStmt(p.block())
 	}
 	return p.expressionStatement()
@@ -200,36 +200,36 @@ func (p Parser) returnStatement() Stmt {
 	keyword := p.previous()
 	var value Expr
 	var e error
-	if !p.check(SEMICOLON) {
+	if !p.check(TokenTypeSemiColon) {
 		value, e = p.expression()
 		if e != nil {
 			fmt.Println("Error while getting expression for the return statement.")
 			return nil
 		}
 	}
-	p.consume(SEMICOLON, "Expect ';' after return value.")
+	p.consume(TokenTypeSemiColon, "Expect ';' after return value.")
 	return NewReturnStmt(*keyword, value)
 }
 
 func (p Parser) block() []Stmt {
 	statements := make([]Stmt, 0)
 	for {
-		if p.check(RIGHT_BRACE) || p.isAtEnd() {
+		if p.check(TokenTypeRightBrace) || p.isAtEnd() {
 			break
 		}
 		statements = append(statements, p.declaration())
 	}
-	p.consume(RIGHT_BRACE, "Expect '}' after block.")
+	p.consume(TokenTypeRightBrace, "Expect '}' after block.")
 	return statements
 }
 
 func (p Parser) ifStatement() Stmt {
-	p.consume(LEFT_PAREN, "Expect '(' after 'if'.")
+	p.consume(TokenTypeLeftParen, "Expect '(' after 'if'.")
 	condition, _ := p.expression()
-	p.consume(RIGHT_PAREN, "Expect ')' after if condition")
+	p.consume(TokenTypeRightParen, "Expect ')' after if condition")
 	thenBranch := p.statement()
 	var elseBranch Stmt
-	if p.match(ELSE) {
+	if p.match(TokenTypeElse) {
 		elseBranch = p.statement()
 	}
 	return NewIfStmt(condition, thenBranch, elseBranch)
@@ -237,33 +237,33 @@ func (p Parser) ifStatement() Stmt {
 
 func (p Parser) printStatement() Stmt {
 	value, _ := p.expression()
-	p.consume(SEMICOLON, "Expect ';' after value.")
+	p.consume(TokenTypeSemiColon, "Expect ';' after value.")
 	return NewPrintStmt(value)
 }
 
 func (p Parser) forStatement() Stmt {
-	p.consume(LEFT_PAREN, "Expect '(' after for")
+	p.consume(TokenTypeLeftParen, "Expect '(' after for")
 	var initializer Stmt
-	if p.match(SEMICOLON) {
+	if p.match(TokenTypeSemiColon) {
 		initializer = nil
-	} else if p.match(VAR) {
+	} else if p.match(TokenTypeVar) {
 		initializer = p.varDeclaration()
 	} else {
 		initializer = p.expressionStatement()
 	}
 
 	var condition Expr
-	if !p.check(SEMICOLON) {
+	if !p.check(TokenTypeSemiColon) {
 		condition, _ = p.expression()
 	}
-	p.consume(SEMICOLON, "Expect ';' after loop condition")
+	p.consume(TokenTypeSemiColon, "Expect ';' after loop condition")
 
 	var increment Expr
 
-	if !p.check(RIGHT_PAREN) {
+	if !p.check(TokenTypeRightParen) {
 		increment, _ = p.expression()
 	}
-	p.consume(RIGHT_PAREN, "Expect ')' after for clauses")
+	p.consume(TokenTypeRightParen, "Expect ')' after for clauses")
 	body := p.statement()
 
 	if increment != nil {
@@ -287,16 +287,16 @@ func (p Parser) forStatement() Stmt {
 }
 
 func (p Parser) whileStatement() Stmt {
-	p.consume(LEFT_PAREN, "Expect '(' after while.")
+	p.consume(TokenTypeLeftParen, "Expect '(' after while.")
 	condition, _ := p.expression()
-	p.consume(RIGHT_PAREN, "Expect ')' after condition")
+	p.consume(TokenTypeRightParen, "Expect ')' after condition")
 	body := p.statement()
 	return NewWhileStmt(condition, body)
 }
 
 func (p Parser) expressionStatement() Stmt {
 	expr, _ := p.expression()
-	p.consume(SEMICOLON, "Expect ';' after expression.")
+	p.consume(TokenTypeSemiColon, "Expect ';' after expression.")
 	return NewExpressionStmt(expr)
 }
 
@@ -306,7 +306,7 @@ func (p Parser) equality() (Expr, error) {
 		return nil, e
 	}
 	for {
-		if !p.match(BANG_EQUAL, EQUAL_EQUAL) {
+		if !p.match(TokenTypeBangEqual, TokenTypeEqualEqual) {
 			break
 		}
 		operator := p.previous()
@@ -325,7 +325,7 @@ func (p Parser) comparison() (Expr, error) {
 		return nil, e
 	}
 	for {
-		if !p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
+		if !p.match(TokenTypeGreater, TokenTypeGreaterEqual, TokenTypeLess, TokenTypeLessEqual) {
 			break
 		}
 		operator := p.previous()
@@ -344,7 +344,7 @@ func (p Parser) addition() (Expr, error) {
 		return nil, e
 	}
 	for {
-		if !p.match(MINUS, PLUS) {
+		if !p.match(TokenTypeMinus, TokenTypePlus) {
 			break
 		}
 		operator := p.previous()
@@ -363,7 +363,7 @@ func (p Parser) multiplication() (Expr, error) {
 		return nil, e
 	}
 	for {
-		if !p.match(SLASH, STAR) {
+		if !p.match(TokenTypeSlash, TokenTypeStar) {
 			break
 		}
 
@@ -378,7 +378,7 @@ func (p Parser) multiplication() (Expr, error) {
 }
 
 func (p Parser) unary() (Expr, error) {
-	if p.match(BANG, MINUS) {
+	if p.match(TokenTypeBang, TokenTypeMinus) {
 		operator := p.previous()
 		right, e := p.unary()
 		if e != nil {
@@ -395,7 +395,7 @@ func (p Parser) call() (Expr, error) {
 		return nil, e
 	}
 	for {
-		if p.match(LEFT_PAREN) {
+		if p.match(TokenTypeLeftParen) {
 			expr = p.finishCall(expr)
 		} else {
 			break
@@ -406,7 +406,7 @@ func (p Parser) call() (Expr, error) {
 
 func (p Parser) finishCall(callee Expr) Expr {
 	arguments := make([]*Expr, 0)
-	if !p.check(RIGHT_PAREN) {
+	if !p.check(TokenTypeRightParen) {
 		for {
 			thisExpr, e := p.expression()
 			if e != nil {
@@ -414,40 +414,40 @@ func (p Parser) finishCall(callee Expr) Expr {
 				return nil
 			}
 			arguments = append(arguments, &thisExpr)
-			if !p.match(COMMA) {
+			if !p.match(TokenTypeComma) {
 				break
 			}
 		}
 	}
-	paren := p.consume(RIGHT_PAREN, "Expect ')' after arguments")
+	paren := p.consume(TokenTypeRightParen, "Expect ')' after arguments")
 	return &ExprCall{Callee: callee, Paren: *paren, Arguments: arguments}
 }
 
 func (p Parser) primary() (Expr, error) {
-	if p.match(FALSE) {
+	if p.match(TokenTypeFalse) {
 		return &ExprLiteral{false}, nil
 	}
 
-	if p.match(TRUE) {
+	if p.match(TokenTypeTrue) {
 		return &ExprLiteral{true}, nil
 	}
 
-	if p.match(NIL) {
+	if p.match(TokenTypeNil) {
 		return &ExprLiteral{nil}, nil
 	}
 
-	if p.match(NUMBER, STRING) {
+	if p.match(TokenTypeNumber, TokenTypeString) {
 		return &ExprLiteral{p.previous().Literal}, nil
 	}
-	if p.match(IDENTIFIER) {
+	if p.match(TokenTypeIdentifier) {
 		return &ExprVar{*p.previous()}, nil
 	}
-	if p.match(LEFT_PAREN) {
+	if p.match(TokenTypeLeftParen) {
 		expr, err := p.expression()
 		if err != nil {
 			return nil, err
 		}
-		p.consume(RIGHT_PAREN, "Expect ')' after expression.")
+		p.consume(TokenTypeRightParen, "Expect ')' after expression.")
 		return &ExprGrouping{expr}, nil
 	}
 	return nil, p.parseErr(p.peek(), "Expect expression.")
@@ -473,11 +473,11 @@ func (p Parser) synchronize() {
 		if p.isAtEnd() {
 			break
 		}
-		if p.previous().Type == SEMICOLON {
+		if p.previous().Type == TokenTypeSemiColon {
 			return
 		}
 		switch p.peek().Type {
-		case CLASS, FUN, VAR, FOR, IF, WHILE, PRINT, RETURN:
+		case TokenTypeClass, TokenTypeFun, TokenTypeVar, TokenTypeFor, TokenTypeIf, TokenTypeWhile, TokenTypePrint, TokenTypeReturn:
 			return
 		}
 		p.advance()

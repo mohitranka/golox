@@ -38,7 +38,7 @@ func (i Interpreter) VisitVarExpr(expr *ExprVar) interface{} {
 // VisitLogicalExpr ...
 func (i Interpreter) VisitLogicalExpr(expr *ExprLogical) interface{} {
 	left := i.evaluate(expr.Left)
-	if expr.Operator.Type == OR {
+	if expr.Operator.Type == TokenTypeOr {
 		if i.isTruthy(left) {
 			return left
 		}
@@ -76,9 +76,9 @@ func (i Interpreter) VisitAssignExpr(expr *ExprAssign) interface{} {
 func (i Interpreter) VisitUnaryExpr(expr *ExprUnary) interface{} {
 	right := i.evaluate(expr.Right)
 	switch expr.Operator.Type {
-	case BANG:
+	case TokenTypeBang:
 		return !i.isTruthy(right.(float64))
-	case MINUS:
+	case TokenTypeMinus:
 		return -right.(float64)
 	}
 	return nil
@@ -125,21 +125,21 @@ func (i Interpreter) VisitBinaryExpr(expr *ExprBinary) interface{} {
 	right := i.evaluate(expr.Right)
 
 	switch expr.Operator.Type {
-	case GREATER:
+	case TokenTypeGreater:
 		return left.(float64) > right.(float64)
-	case GREATER_EQUAL:
+	case TokenTypeGreaterEqual:
 		return left.(float64) >= right.(float64)
-	case LESS:
+	case TokenTypeLess:
 		return left.(float64) < right.(float64)
-	case LESS_EQUAL:
+	case TokenTypeLessEqual:
 		return left.(float64) <= right.(float64)
-	case BANG_EQUAL:
+	case TokenTypeBangEqual:
 		return !(left.(float64) == right.(float64))
-	case EQUAL_EQUAL:
+	case TokenTypeEqualEqual:
 		return left.(float64) == right.(float64)
-	case MINUS:
+	case TokenTypeMinus:
 		return left.(float64) - right.(float64)
-	case PLUS:
+	case TokenTypePlus:
 		typeLeft := reflect.TypeOf(left).String()
 		typeRight := reflect.TypeOf(right).String()
 		if (typeLeft == "float64" || typeLeft == "float32" || typeLeft == "int") && (typeRight == "float64" || typeRight == "float32" || typeRight == "int") {
@@ -147,9 +147,9 @@ func (i Interpreter) VisitBinaryExpr(expr *ExprBinary) interface{} {
 		} else if typeLeft == "string" && typeRight == "string" {
 			return left.(string) + right.(string)
 		}
-	case SLASH:
+	case TokenTypeSlash:
 		return left.(float64) / right.(float64)
-	case STAR:
+	case TokenTypeStar:
 		return left.(float64) * right.(float64)
 	}
 	return nil

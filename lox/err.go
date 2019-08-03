@@ -33,7 +33,7 @@ func (re *RuntimeError) Error() string {
 
 // Error ...
 func (pe *ParseError) Error() string {
-	if pe.Token.Type == EOF {
+	if pe.Token.Type == TokenTypeEOF {
 		return report(pe.Token.Line, " at end", pe.Msg)
 	}
 	return report(pe.Token.Line, fmt.Sprintf(" at '%s'", pe.Token.Lexeme), pe.Msg)
